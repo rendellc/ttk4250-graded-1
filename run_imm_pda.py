@@ -123,15 +123,15 @@ if play_movie:
 # but no exceptions do not guarantee correct implementation.
 
 # sensor
-sigma_z = 10
-clutter_intensity = 1e-2
-PD = 0.8
-gate_size = 50
+sigma_z = 2
+clutter_intensity = 0.0002
+PD = 0.9
+gate_size = 2
 
 # dynamic models
-sigma_a_CV = 0.5
-sigma_a_CT = 0.5
-sigma_omega = 0.3
+sigma_a_CV = 4
+sigma_a_CT = 4
+sigma_omega = 0.1
 
 
 # markov chain
@@ -143,7 +143,10 @@ p10 = 0.9  # initvalue for mode probabilities
 PI = np.array([[PI11, (1 - PI11)], [(1 - PI22), PI22]])
 assert np.allclose(np.sum(PI, axis=1), 1), "rows of PI must sum to 1"
 
-mean_init = np.array([0, 0, 0, 0, 0])
+# not valid
+z_true = Z[0][true_association[0]-1]
+
+mean_init = np.array([z_true[0], z_true[1], 0, 0, 0])
 cov_init = np.diag([1000, 1000, 30, 30, 0.1]) ** 2  # THIS WILL NOT BE GOOD
 mode_probabilities_init = np.array([p10, (1 - p10)])
 mode_states_init = GaussParams(mean_init, cov_init)

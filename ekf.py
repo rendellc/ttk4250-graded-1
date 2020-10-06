@@ -250,9 +250,9 @@ class EKF:
     def gate(self,
              z: np.ndarray,
              ekfstate: GaussParams,
+             gate_size_square: float,
              *,
              sensor_state: Dict[str, Any],
-             gate_size_square: float,
              ) -> bool:
         """ Check if z is inside sqrt(gate_sized_squared)-sigma ellipse of ekfstate in sensor_state """
 

@@ -301,14 +301,14 @@ class IMM(Generic[MT]):
         self,
         z: np.ndarray,
         immstate: MixtureParameters[MT],
-        gate_size: float,
+        gate_size_square: float,
         sensor_state: Dict[str, Any] = None,
     ) -> bool:
         """Check if z is within the gate of any mode in immstate in sensor_state"""
 
         # THIS IS ONLY NEEDED FOR PDA. You can wait with implementation if you want
         gated_per_mode = [
-            self.fiters[i].gate(z, immstate.components[i], gate_size, sensor_state) 
+            self.filters[i].gate(z, immstate.components[i], gate_size_square, sensor_state=sensor_state) 
             for i in range(len(self.filters))
         ]
 

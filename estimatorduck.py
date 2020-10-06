@@ -42,7 +42,7 @@ class StateEstimator(Protocol[T]):
         self,
         z: np.ndarray,
         eststate: T,
-        gate_size: float,
+        gate_size_square: float,
         *,
         sensor_state: Dict[str, Any] = None
     ) -> bool:

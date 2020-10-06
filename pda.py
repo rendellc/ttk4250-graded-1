@@ -37,7 +37,7 @@ class PDA(Generic[ET]):  # Probabilistic Data Association
 
         # The loop can be done using ether of these: normal loop, list comprehension or map
         gated = list(map(
-            lambda z: self.state_filter.gate(z, filter_state, sensor_state=sensor_state, gate_size_square=g_squared),
+            lambda z: self.state_filter.gate(z, filter_state, gate_size_square=g_squared, sensor_state=sensor_state),
             Z))
 
         # debug

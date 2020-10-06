@@ -1,5 +1,6 @@
 from typing import Sequence
 import numpy as np
+import numpy.linalg as la
 
 
 def mahalanobis_distance_squared(
@@ -51,6 +52,24 @@ def NEES_sequence_indexed(
     NEES_seq = NEES_sequence(mean_seq_indexed, cov_seq_indexed, true_seq_indexed)
     return NEES_seq
 
+def NEES_indexed(
+    # shape (n,)
+    mean,
+    # shape (n, n)
+    cov,
+    # shape (n)
+    true,
+    # into which part of the state to calculate NEES for
+    idxs: Sequence[int],
+) -> float:
+    mean_indexed = mean[idxs]
+    true_indexed = true[idxs]
+    cov_indexed = cov[idxs,:][:,idxs]
+
+    error = mean_indexed - true_indexed
+    NEES = error.T @ la.solve(cov_indexed, error)
+
+    return NEES
 
 def distance_sequence(
     # shape (N, n)

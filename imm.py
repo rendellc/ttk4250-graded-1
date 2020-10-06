@@ -228,6 +228,11 @@ class IMM(Generic[MT]):
             for i in range(len(self.filters))
         ]
 
+        # ll = 0
+        # for i in range(len(mode_conditioned_ll)):
+        #     ll += immstate.weights[i] * np.exp(mode_conditioned_ll[i])
+        # ll = np.log(ll)
+
         ll = logsumexp(mode_conditioned_ll, b=immstate.weights)
 
         return ll

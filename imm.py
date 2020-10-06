@@ -223,9 +223,12 @@ class IMM(Generic[MT]):
 
         # THIS IS ONLY NEEDED FOR IMM-PDA. You can therefore wait if you prefer.
 
-        mode_conditioned_ll = None # TODO in for IMM-PDA
+        mode_conditioned_ll = [
+            self.filters[i].loglikelihood(z, immstate.components[i], sensor_state=sensor_state)
+            for i in range(len(self.filters))
+        ]
 
-        ll = None # TODO
+        ll = logsumexp(mode_conditioned_ll, b=immstate.we)
 
         return ll
 
@@ -234,23 +237,35 @@ class IMM(Generic[MT]):
     ) -> MixtureParameters[MT]:
         """Approximate a mixture of immstates as a single immstate"""
         # extract probabilities as array
-        # weights = immstate_mixture.weights
-        # component_conditioned_mode_prob = self.PI
+        weights = immstate_mixture.weights
+        
+        mode_prob = []
+        for sk in range(len(self.filters)):
+            mode_prob_sk = 0
+            for ak in range(len(immstate_mixture.weights)):
+                weights_ak = immstate_mixture.weights[ak]
+                mode_prob_sk_given_ak = immstate_mixture.components[ak].weights[sk]
+                mode_prob_sk += mode_prob_sk_given_ak * weights_ak
 
-        # # flip conditioning order with Bayes
-        # # print(weights.shape)
-        # # print(component_conditioned_mode_prob.shape)
-        # # TODO: is this correct?
-        # mode_prob, mode_conditioned_component_prob = \
-        #         discretebayes.discrete_bayes(weights, component_conditioned_mode_prob)
+            mode_prob.append(mode_prob_sk)
 
-        # # Hint list_a of lists_b to list_b of lists_a: zip(*immstate_mixture.components)
-        # # mode_states = list(zip(*immstate_mixture.components))
-        # mode_states = immstate_mixture.components
+        mixture_components = []
+        for sk in range(len(self.filters)):
+            weights = []
+            components = []
+            for ak in range(len(immstate_mixture.weights)):
+                posterior_given_sk_ak = immstate_mixture.components[ak].components[sk]
+                mode_prob_sk_given_ak = immstate_mixture.components[ak].weights[sk]
+                weights.append(mode_prob_sk_given_ak * immstate_mixture.weights[ak] / mode_prob[sk])
+                components.append(posterior_given_sk_ak)
 
-        # immstate_reduced = MixtureParameters(mode_prob, mode_states)
-        # return immstate_reduced
-        raise NotImplementedError("IMM reduce mixture not implemented")
+            mixture = MixtureParameters(weights,components)
+            reduced = self.filters[0].reduce_mixture(mixture)
+            mixture_components.append(reduced)
+        
+        reduced = MixtureParameters(mode_prob, mixture_components)
+
+        return reduced
 
     def estimate(self, immstate: MixtureParameters[MT]) -> GaussParams:
         """Calculate a state estimate with its covariance from immstate"""
@@ -292,9 +307,12 @@ class IMM(Generic[MT]):
         """Check if z is within the gate of any mode in immstate in sensor_state"""
 
         # THIS IS ONLY NEEDED FOR PDA. You can wait with implementation if you want
-        gated_per_mode = None # TODO
+        gated_per_mode = [
+            self.fiters[i].gate(z, immstate.components[i], gate_size, sensor_state) 
+            for i in range(len(self.filters))
+        ]
 
-        gated = None # TODO
+        gated = True in gated_per_mode
         return gated
 
     def NISes(

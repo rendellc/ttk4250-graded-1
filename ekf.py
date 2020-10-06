@@ -257,8 +257,11 @@ class EKF:
         """ Check if z is inside sqrt(gate_sized_squared)-sigma ellipse of ekfstate in sensor_state """
 
         # a function to be used in PDA and IMM-PDA
-        gated = None  # TODO in PDA exercise
-        return gated
+        v, S = self.innovation(z, ekfstate, sensor_state=sensor_state)
+        innov = v.T @ la.solve(S, v)
+
+        return  innov < gate_size_square
+
 
     def loglikelihood(self,
                       z: np.ndarray,

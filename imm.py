@@ -228,7 +228,7 @@ class IMM(Generic[MT]):
             for i in range(len(self.filters))
         ]
 
-        ll = logsumexp(mode_conditioned_ll, b=immstate.we)
+        ll = logsumexp(mode_conditioned_ll, b=immstate.weights)
 
         return ll
 

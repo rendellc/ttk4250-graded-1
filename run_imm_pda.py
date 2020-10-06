@@ -126,7 +126,7 @@ if play_movie:
 sigma_z = 10
 clutter_intensity = 1e-2
 PD = 0.8
-gate_size = 5
+gate_size = 50
 
 # dynamic models
 sigma_a_CV = 0.5

@@ -82,6 +82,7 @@ Ts = loaded_data["Ts"].item()
 Xgt = loaded_data["Xgt"].T
 Z = [zk.T for zk in loaded_data["Z"].ravel()]
 true_association = loaded_data["a"].ravel()
+time = np.arange(K) * Ts
 
 # plot measurements close to the trajectory
 fig1, ax1 = plt.subplots(num=1, clear=True)
@@ -183,14 +184,14 @@ CI4K = np.array(scipy.stats.chi2.interval(confprob, 4 * K)) / K
 # trajectory
 fig3, axs3 = plt.subplots(1, 2, num=3, clear=True)
 utils.trajectory_plot(axs3[0], trackresult, Xgt)
-utils.mode_plot(axs3[1], trackresult, K, Ts)
+utils.mode_plot(axs3[1], trackresult, time)
 
 # NEES
 NEESpos = trackresult.NEESpos
 fig4, axs4 = plt.subplots(3, sharex=True, num=4, clear=True)
-utils.confidence_interval_plot(axs4[0], trackresult.NEESpos, K, Ts, CI2, confprob, "NEES pos")
-utils.confidence_interval_plot(axs4[1], trackresult.NEESvel, K, Ts, CI2, confprob, "NEES vel")
-utils.confidence_interval_plot(axs4[2], trackresult.NEES, K, Ts, CI4, confprob, "NEES")
+utils.confidence_interval_plot(axs4[0], time, trackresult.NEESpos, CI2, confprob, "NEES pos")
+utils.confidence_interval_plot(axs4[1], time, trackresult.NEESvel, CI2, confprob, "NEES vel")
+utils.confidence_interval_plot(axs4[2], time, trackresult.NEES, CI4, confprob, "NEES")
 fig4.tight_layout()
 
 ANEESpos = trackresult.ANEESpos

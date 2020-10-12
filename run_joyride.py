@@ -19,7 +19,6 @@ mean_init = np.array([7000, 3500, 0, 0, 0])
 cov_init = np.diag([100, 100, 10, 10, 0.1]) ** 2  
 
 
-
 # %% PDAF using EKF with CV-model
 # sensor
 sigma_z = 8
@@ -40,7 +39,7 @@ tracker = pda.PDA(ekf_filter, clutter_intensity, PD, gate_size)
 init_state = tracker.init_filter_state({"mean": mean_init, "cov": cov_init})
 
 # track
-joyride.load_track_and_plot_joyride(tracker, init_state, 'PDAF')
+joyride.evaluate_on_joyride(tracker, init_state)
 
 
 # %% PDAF using EKF with CT-model
@@ -64,7 +63,8 @@ tracker = pda.PDA(ekf_filter, clutter_intensity, PD, gate_size)
 init_state = tracker.init_filter_state({"mean": mean_init, "cov": cov_init})
 
 # track
-joyride.load_track_and_plot_joyride(tracker, init_state, 'PDAF')
+joyride.evaluate_on_joyride(tracker, init_state)
+
 
 
 # %% IMM-PDA with CV/CT-models
@@ -109,7 +109,8 @@ imm_filter = imm.IMM(ekf_filters, PI)
 
 tracker = pda.PDA(imm_filter, clutter_intensity, PD, gate_size)
 
-joyride.load_track_and_plot_joyride(tracker, init_imm_state, 'IMM-PDAF', False, 60, 60+10)
+joyride.evaluate_on_joyride(tracker, init_imm_state, False, 60, 60+10)
+
 
 # %% IMM-PDA with CV/CT/CV-models
 # sensor
@@ -142,6 +143,7 @@ assert np.allclose(
     np.sum(mode_probabilities_init), 1
 ), "initial mode probabilities must sum to 1"
 
+
 # make model
 measurement_model = measurementmodels.CartesianPosition(sigma_z, state_dim=5)
 dynamic_models: List[dynamicmodels.DynamicModel] = []
@@ -156,5 +158,8 @@ imm_filter = imm.IMM(ekf_filters, PI)
 
 tracker = pda.PDA(imm_filter, clutter_intensity, PD, gate_size)
 
-joyride.load_track_and_plot_joyride(tracker, init_imm_state, 'IMM-PDAF', False, 60, 60+10)
+joyride.evaluate_on_joyride(tracker, init_imm_state, False, 60, 60+10)
 
+
+import matplotlib.pyplot as plt
+plt.show()

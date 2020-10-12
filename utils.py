@@ -1,10 +1,13 @@
+import scipy
+import numpy as np
+
+from typing import List
 from dataclasses import dataclass
 
+import imm
+from gaussparams import GaussParams
 import estimationstatistics as estats
 
-import numpy as np
-from typing import List
-from gaussparams import GaussParams
 
 @dataclass
 class TrackResult:
@@ -53,7 +56,7 @@ def track_and_evaluate_sequence(tracker, init_state, Z, Xgt, Ts, K):
         if isinstance(Ts, float):
             predict = tracker.predict(update, Ts)
         else:
-            print("DEBUG: this should be some sort of list:", type(Ts))
+            assert isinstance(Ts, List) or isinstance(Ts, np.ndarray), f"Expect some sort of list: {type(Ts)}"
             predict = tracker.predict(update, Ts[k])
         update = tracker.update(Zk, predict)
 
@@ -76,7 +79,10 @@ def track_and_evaluate_sequence(tracker, init_state, Z, Xgt, Ts, K):
         estimate_list.append(estimate)
 
     x_hat = np.array([est.mean for est in estimate_list])
-    prob_hat = np.array([upd.weights for upd in update_list])
+    if isinstance(tracker.state_filter, imm.IMM):
+        prob_hat = np.array([upd.weights for upd in update_list])
+    else:
+        prob_hat = []
     pos_error = np.linalg.norm(x_hat[:, :2] - Xgt[:, :2], axis=1)
     vel_error = np.linalg.norm(x_hat[:, 2:4] - Xgt[:, 2:4], axis=1)
     posRMSE, peak_pos_deviation = compute_rmse_and_peak_deviation(x_hat[:, :2], Xgt[:, :2])
@@ -116,22 +122,30 @@ def trajectory_plot(ax, trackresult, Xgt):
     )
     ax.axis("equal")
 
-def mode_plot(ax, trackresult, K, Ts):
-    assert isinstance(Ts, float), "need to create mode_plot for Ts: List[float] aswell"
-
+def mode_plot(ax, trackresult, time):
     # probabilities
-    ax.plot(np.arange(K) * Ts, trackresult.prob_hat)
+    ax.plot(time, trackresult.prob_hat)
     ax.set_ylim([0, 1])
     ax.set_ylabel("mode probability")
     ax.set_xlabel("time")
 
-def confidence_interval_plot(ax, NEES, K, Ts, CI, confprob, ylabel):
-    assert isinstance(Ts, float), "need to create function for Ts: List[float] aswell"
-
+def confidence_interval_plot(ax, time, NEES, CI, confprob, ylabel):
     inCI = np.mean((CI[0] <= NEES) * (NEES <= CI[1]))
 
-    ax.plot(np.arange(K) * Ts, NEES)
-    ax.plot([0, (K - 1) * Ts], np.repeat(CI[None], 2, 0), "--r")
+    ax.plot(time, NEES)
+    ax.plot([time[0], time[~0]], np.repeat(CI[None], 2, 0), "--r")
     ax.set_ylabel(ylabel)
     ax.set_title(f"{inCI*100:.1f}% inside {confprob*100:.1f}% CI")
+
+
+def load_pda_data(filename):
+    # %% load data and plot
+    loaded_data = scipy.io.loadmat(filename)
+    K = loaded_data["K"].item()
+    Ts = loaded_data["Ts"].squeeze()
+    Xgt = loaded_data["Xgt"].T
+    Z = [zk.T for zk in loaded_data["Z"].ravel()]
+
+    return Z, Xgt, K, Ts
+
 

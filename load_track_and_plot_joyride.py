@@ -18,6 +18,7 @@ from gaussparams import GaussParams
 from mixturedata import MixtureParameters
 import estimationstatistics as estats
 
+import utils
 from utils import track_and_evaluate_sequence, TrackResult
 
 # %% plot config check and style setup
@@ -79,161 +80,33 @@ def play_measurement_movie(fig, ax, play_slice, Z, dt):
     maxes = np.vstack(Z).max(axis=0)
     ax.axis([mins[0], maxes[0], mins[1], maxes[1]])
     plotpause = dt
+    plt.show(block=False)
     # sets a pause in between time steps if it goes to fast
     for k, Zk in enumerate(Z[play_slice]):
         sh.set_offsets(Zk)
         th.set_text(f"measurements at step {k}")
         fig.canvas.draw_idle()
-        plt.show(block=False)
         plt.pause(plotpause)
 
 
-
-def immpdaf_plot(Ts, x_hat, Xgt, update_list, NEES, NEESpos, NEESvel, posRMSE, velRMSE, peak_pos_deviation, peak_vel_deviation, confprob):
-    # consistency
-    K = len(x_hat)
-    CI2 = np.array(scipy.stats.chi2.interval(confprob, 2))
-    CI4 = np.array(scipy.stats.chi2.interval(confprob, 4))
-    CI2K = np.array(scipy.stats.chi2.interval(confprob, 2 * K)) / K
-    CI4K = np.array(scipy.stats.chi2.interval(confprob, 4 * K)) / K
-    ANEESpos = np.mean(NEESpos)
-    ANEESvel = np.mean(NEESvel)
-    ANEES = np.mean(NEES)
-
-    time = np.cumsum(Ts)
-
-
-    prob_hat = np.array([upd.weights for upd in update_list])
-
-    # %% plots
-    # trajectory
-    fig, axs3 = plt.subplots(1, 2, num=3, clear=True)
-    axs3[0].plot(*x_hat.T[:2], label=r"$\hat x$")
-    axs3[0].plot(*Xgt.T[:2], label="$x$")
-    axs3[0].set_title(
-        f"RMSE(pos, vel) = ({posRMSE:.3f}, {velRMSE:.3f})\npeak_dev(pos, vel) = ({peak_pos_deviation:.3f}, {peak_vel_deviation:.3f})"
-    )
-    axs3[0].axis("equal")
-    # probabilities
-    axs3[1].plot(time, prob_hat)
-    axs3[1].set_ylim([0, 1])
-    axs3[1].set_ylabel("mode probability")
-    axs3[1].set_xlabel("time")
-
-    # NEES
-    fig, axs4 = plt.subplots(3, sharex=True, num=4, clear=True)
-    axs4[0].plot(time, NEESpos)
-    axs4[0].plot([0, sum(Ts)], np.repeat(CI2[None], 2, 0), "--r")
-    axs4[0].set_ylabel("NEES pos")
-    inCIpos = np.mean((CI2[0] <= NEESpos) * (NEESpos <= CI2[1]))
-    axs4[0].set_title(f"{inCIpos*100:.1f}% inside {confprob*100:.1f}% CI")
-
-    axs4[1].plot(time, NEESvel)
-    axs4[1].plot([0, sum(Ts)], np.repeat(CI2[None], 2, 0), "--r")
-    axs4[1].set_ylabel("NEES vel")
-    inCIvel = np.mean((CI2[0] <= NEESvel) * (NEESvel <= CI2[1]))
-    axs4[1].set_title(f"{inCIvel*100:.1f}% inside {confprob*100:.1f}% CI")
-
-    axs4[2].plot(time, NEES)
-    axs4[2].plot([0, sum(Ts)], np.repeat(CI4[None], 2, 0), "--r")
-    axs4[2].set_ylabel("NEES")
-    inCI = np.mean((CI4[0] <= NEES) * (NEES <= CI4[1]))
-    axs4[2].set_title(f"{inCI*100:.1f}% inside {confprob*100:.1f}% CI")
-
-    print(f"ANEESpos = {ANEESpos:.2f} with CI = [{CI2K[0]:.2f}, {CI2K[1]:.2f}]")
-    print(f"ANEESvel = {ANEESvel:.2f} with CI = [{CI2K[0]:.2f}, {CI2K[1]:.2f}]")
-    print(f"ANEES = {ANEES:.2f} with CI = [{CI4K[0]:.2f}, {CI4K[1]:.2f}]")
-
-    # errors
-    fig5, axs5 = plt.subplots(2, num=5, clear=True)
-    axs5[0].plot(time, tr.pos_error)
-    axs5[0].set_ylabel("position error")
-    axs5[1].plot(time, tr.vel_error)
-    axs5[1].set_ylabel("velocity error")
-
-    plt.show(block=False)
-
-
-def ekfpdaf_plot(trackresult, Ts, Xgt, confprob):
-    tr = trackresult # shorter name
-
-    # consistency
-    K = Xgt.shape[0]
-    CI2 = np.array(scipy.stats.chi2.interval(confprob, 2))
-    CI4 = np.array(scipy.stats.chi2.interval(confprob, 4))
-    CI2K = np.array(scipy.stats.chi2.interval(confprob, 2 * K)) / K
-    CI4K = np.array(scipy.stats.chi2.interval(confprob, 4 * K)) / K
-    time = np.cumsum(Ts)
-
-
-    # %% plots
-    fig, ax = plt.subplots(num=3, clear=True)
-    ax.plot(*tr.x_hat.T[:2], label=r"$\hat x$")
-    ax.plot(*Xgt.T[:2], label="$x$")
-    ax.set_title(
-        rf"posRMSE = {tr.posRMSE:.2f}, velRMSE = {tr.velRMSE:.2f}"
-    )
-
-    fig4, axs4 = plt.subplots(3, sharex=True, num=4, clear=True)
-    CI2 = np.array(scipy.stats.chi2.interval(confprob, 2)) # confidence interval for NEESpos and NEESvel
-    CI4 = np.array(scipy.stats.chi2.interval(confprob, 4)) # confidence interval for NEES
-
-    axs4[0].plot(time, NEESpos)
-    axs4[0].plot([0, sum(Ts)], np.repeat(CI2[None], 2, 0), "--r")
-    axs4[0].set_ylabel("NEES pos")
-    inCIpos = np.mean((CI2[0] <= tr.NEESpos) * (tr.NEESpos <= CI2[1]))
-    axs4[0].set_title(f"{inCIpos*100:.1f}% inside {confprob*100:.1f}% CI")
-
-    axs4[1].plot(time, NEESvel)
-    axs4[1].plot([0, sum(Ts)], np.repeat(CI2[None], 2, 0), "--r")
-    axs4[1].set_ylabel("NEES vel")
-    inCIvel = np.mean((CI2[0] <= tr.NEESvel) * (tr.NEESvel <= CI2[1]))
-    axs4[1].set_title(f"{inCIvel*100:.1f}% inside {confprob*100:.1f}% CI")
-
-    axs4[2].plot(time, tr.NEESpos)
-    axs4[2].plot([0, sum(Ts)], np.repeat(CI4[None], 2, 0), "--r")
-    axs4[2].set_ylabel("NEES")
-    inCI = np.mean((CI4[0] <= tr.NEES) * (tr.NEES <= CI4[1]))
-    axs4[2].set_title(f"{inCI*100:.1f}% inside {confprob*100:.1f}% CI")
-
-    print(f"ANEESpos = {tr.ANEESpos:.2f} with CI = [{CI2K[0]:.2f}, {CI2K[1]:.2f}]")
-    print(f"ANEESvel = {tr.ANEESvel:.2f} with CI = [{CI2K[0]:.2f}, {CI2K[1]:.2f}]")
-    print(f"ANEES = {tr.ANEES:.2f} with CI = [{CI4K[0]:.2f}, {CI4K[1]:.2f}]")
-
-    fig5, axs5 = plt.subplots(2, num=5, clear=True)
-    axs5[0].plot(time, tr.pos_error)
-    axs5[0].set_ylabel("position error")
-    axs5[1].plot(time, tr.vel_error)
-    axs5[1].set_ylabel("velocity error")
-
-
-
-def load_track_and_plot_joyride(tracker, init_state, tracker_type, do_play_estimation_movie = False, start_k = 0, end_k = 10):
-
-    # %% load data and plot
-    filename_to_load = "data_joyride.mat"
-    loaded_data = scipy.io.loadmat(filename_to_load)
-    K = loaded_data["K"].item()
-    Ts = loaded_data["Ts"].squeeze()
-    Xgt = loaded_data["Xgt"].T
-    Z = [zk.T for zk in loaded_data["Z"].ravel()]
-
+def evaluate_on_joyride(tracker, init_state, do_play_estimation_movie = False, start_k = 0, end_k = 10, plotfileprefix = ""):
+    Z, Xgt, K, Ts = utils.load_pda_data("data_joyride.mat")
     assert len(Z) == K
     assert len(Z) == len(Xgt)
 
     # plot measurements close to the trajectory
-    # fig1, ax1 = plt.subplots(num=1, clear=True)
+    fig1, ax1 = plt.subplots(num=1, clear=True)
+    Z_plot_data = np.empty((0, 2), dtype=float)
+    plot_measurement_distance = 45
+    for Zk, xgtk in zip(Z, Xgt):
+        to_plot = np.linalg.norm(Zk - xgtk[None:2], axis=1) <= plot_measurement_distance
+        Z_plot_data = np.append(Z_plot_data, Zk[to_plot], axis=0)
 
-    # Z_plot_data = np.empty((0, 2), dtype=float)
-    # plot_measurement_distance = 45
-    # for Zk, xgtk in zip(Z, Xgt):
-    #     to_plot = np.linalg.norm(Zk - xgtk[None:2], axis=1) <= plot_measurement_distance
-    #     Z_plot_data = np.append(Z_plot_data, Zk[to_plot], axis=0)
-
-    # ax1.scatter(*Z_plot_data.T, color="C1")
-    # ax1.plot(*Xgt.T[:2], color="C0", linewidth=1.5)
-    # ax1.set_title("True trajectory and the nearby measurements")
-    # plt.show(block=False)
+    ax1.scatter(*Z_plot_data.T, color="C1")
+    ax1.plot(*Xgt.T[:2], color="C0", linewidth=1.5)
+    ax1.set_title("True trajectory and the nearby measurements")
+    fig1.tight_layout()
+    fig1.savefig(plotfileprefix+"true_trajectory.eps")
 
     # %% play measurement movie. Remember that you can cross out the window
     do_play_measurement_movie = False
@@ -242,20 +115,74 @@ def load_track_and_plot_joyride(tracker, init_state, tracker_type, do_play_estim
         fig2, ax2 = plt.subplots(num=2, clear=True)
         play_measurement_movie(fig2, ax2, play_slice, Z, 0.1)
 
+
     # First measurement is time 0 -> don't predict before first update.
     Ts = [0, *Ts]
     trackresult = track_and_evaluate_sequence(tracker, init_state, Z, Xgt, Ts, K)
+
+    tr = trackresult # shorter name
+
+    # consistency
     confprob = 0.9
+    CI2 = np.array(scipy.stats.chi2.interval(confprob, 2))
+    CI4 = np.array(scipy.stats.chi2.interval(confprob, 4))
+    CI2K = np.array(scipy.stats.chi2.interval(confprob, 2 * K)) / K
+    CI4K = np.array(scipy.stats.chi2.interval(confprob, 4 * K)) / K
+
+    time = np.cumsum(Ts)
 
     if isinstance(tracker.state_filter, imm.IMM):
         print("Tracker uses IMM")
-        immpdaf_plot(trackresult, Ts, Xgt, confprob)
-        
+
+        # %% IMM-tracker plots
+        # trajectory
+        fig, axs3 = plt.subplots(1, 2, num=3, clear=True)
+        utils.trajectory_plot(axs3[0], trackresult, Xgt)
+        # probabilities
+        utils.mode_plot(axs3[1], trackresult, time)
+
+        # NEES
+        fig, axs4 = plt.subplots(3, sharex=True, num=4, clear=True)
+        utils.confidence_interval_plot(axs4[0], time, tr.NEESpos, CI2, confprob, "NEES pos")
+        utils.confidence_interval_plot(axs4[1], time, tr.NEESvel, CI2, confprob, "NEES vel")
+        utils.confidence_interval_plot(axs4[2], time, tr.NEES, CI4, confprob, "NEES")
+
+        print(f"ANEESpos = {tr.ANEESpos:.2f} with CI = [{CI2K[0]:.2f}, {CI2K[1]:.2f}]")
+        print(f"ANEESvel = {tr.ANEESvel:.2f} with CI = [{CI2K[0]:.2f}, {CI2K[1]:.2f}]")
+        print(f"ANEES = {tr.ANEES:.2f} with CI = [{CI4K[0]:.2f}, {CI4K[1]:.2f}]")
+
+        # errors
+        fig5, axs5 = plt.subplots(2, num=5, clear=True)
+        axs5[0].plot(time, tr.pos_error)
+        axs5[0].set_ylabel("position error")
+        axs5[1].plot(time, tr.vel_error)
+        axs5[1].set_ylabel("velocity error")
+
         if do_play_estimation_movie:
             play_estimation_movie(tracker, Z, trackresult.predict_list, trackresult.update_list, start_k, end_k)
+
     elif isinstance(tracker.state_filter, ekf.EKF):
         print("Tracker uses EKF")
-        ekfpdaf_plot(trackresult, Ts, Xgt, confprob)
+
+        # %% EKF-tracker plots
+        fig, ax = plt.subplots(num=3, clear=True)
+        utils.trajectory_plot(ax, trackresult, Xgt)
+
+        fig4, axs4 = plt.subplots(3, sharex=True, num=4, clear=True)
+        utils.confidence_interval_plot(axs4[0], time, tr.NEESpos, CI2, confprob, "NEES pos")
+        utils.confidence_interval_plot(axs4[1], time, tr.NEESvel, CI2, confprob, "NEES vel")
+        utils.confidence_interval_plot(axs4[2], time, tr.NEES, CI4, confprob, "NEES")
+        fig4.tight_layout()
+
+        print(f"ANEESpos = {tr.ANEESpos:.2f} with CI = [{CI2K[0]:.2f}, {CI2K[1]:.2f}]")
+        print(f"ANEESvel = {tr.ANEESvel:.2f} with CI = [{CI2K[0]:.2f}, {CI2K[1]:.2f}]")
+        print(f"ANEES = {tr.ANEES:.2f} with CI = [{CI4K[0]:.2f}, {CI4K[1]:.2f}]")
+
+        fig5, axs5 = plt.subplots(2, num=5, clear=True)
+        axs5[0].plot(time, tr.pos_error)
+        axs5[0].set_ylabel("position error")
+        axs5[1].plot(time, tr.vel_error)
+        axs5[1].set_ylabel("velocity error")
     else:
         print("Invalid tracker type")
 

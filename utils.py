@@ -132,12 +132,16 @@ def trajectory_plot(ax, trackresult, Xgt):
     )
     ax.axis("equal")
 
-def mode_plot(ax, trackresult, time):
+def mode_plot(ax, trackresult, time, labels):
     # probabilities
-    ax.plot(time, trackresult.prob_hat)
+    print(trackresult.prob_hat.shape)
+    for i in range(len(labels)):
+        mode_prob = trackresult.prob_hat[:,i]
+        ax.plot(time, mode_prob, label=labels[i])
     ax.set_ylim([0, 1])
     ax.set_ylabel("mode probability")
     ax.set_xlabel("time")
+    ax.legend(loc="upper right")
 
 def confidence_interval_plot(ax, time, NEES, CI, confprob, ylabel):
     inCI = np.mean((CI[0] <= NEES) * (NEES <= CI[1]))
@@ -176,7 +180,7 @@ def play_measurement_movie(fig, ax, play_slice, Z, dt):
         plt.pause(plotpause)
 
 
-def evaluate_on_joyride(tracker, init_state, do_play_estimation_movie = False, start_k = 0, end_k = 10, prefix = "", figdir = "figs/"):
+def evaluate_on_joyride(tracker, init_state, do_play_estimation_movie = False, start_k = 0, end_k = 10, modes = [], prefix = "", figdir = "figs/"):
     Z, Xgt, K, Ts = load_pda_data("data_joyride.mat")
     assert len(Z) == K
     assert len(Z) == len(Xgt)
@@ -228,7 +232,7 @@ def evaluate_on_joyride(tracker, init_state, do_play_estimation_movie = False, s
         fig3, axs3 = plt.subplots(1, 2, num=3, clear=True)
         trajectory_plot(axs3[0], trackresult, Xgt)
         # probabilities
-        mode_plot(axs3[1], trackresult, time)
+        mode_plot(axs3[1], trackresult, time, labels=modes)
         fig3.savefig(prefix+"_modeplot.pdf")
 
         # NEES

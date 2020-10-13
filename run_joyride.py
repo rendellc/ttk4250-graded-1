@@ -45,6 +45,7 @@ except Exception as e:
 mean_init = np.array([7000, 3500, 0, 0, 0])
 cov_init = np.diag([100, 100, 10, 10, 0.1]) ** 2  
 
+
 # %% PDAF using EKF with CV-model
 # sensor
 sigma_z = 8
@@ -64,7 +65,7 @@ tracker = pda.PDA(ekf_filter, clutter_intensity, PD, gate_size)
 init_state = tracker.init_filter_state({"mean": mean_init, "cov": cov_init})
 #
 # track
-utils.evaluate_on_joyride(tracker, init_state, prefix="cv")
+utils.evaluate_on_joyride(tracker, init_state, modes = ["CV"], prefix="cv")
 
 
 # %% PDAF using EKF with CT-model
@@ -88,7 +89,7 @@ tracker = pda.PDA(ekf_filter, clutter_intensity, PD, gate_size)
 init_state = tracker.init_filter_state({"mean": mean_init, "cov": cov_init})
 
 # track
-utils.evaluate_on_joyride(tracker, init_state, prefix="ct")
+utils.evaluate_on_joyride(tracker, init_state, modes=["CT"], prefix="ct")
 
 
 
@@ -134,7 +135,8 @@ imm_filter = imm.IMM(ekf_filters, PI)
 
 tracker = pda.PDA(imm_filter, clutter_intensity, PD, gate_size)
 
-utils.evaluate_on_joyride(tracker, init_imm_state, False, 60, 60+10, prefix="cvct")
+utils.evaluate_on_joyride(tracker, init_imm_state, False, 60, 60+10, modes=["CV", "CT"], prefix="cvct")
+
 
 
 # %% IMM-PDA with CV/CT/CV-models
@@ -183,7 +185,7 @@ imm_filter = imm.IMM(ekf_filters, PI)
 
 tracker = pda.PDA(imm_filter, clutter_intensity, PD, gate_size)
 
-utils.evaluate_on_joyride(tracker, init_imm_state, False, 60, 60+10, prefix="cvctcv")
+utils.evaluate_on_joyride(tracker, init_imm_state, False, 60, 60+10, modes=["CV", "CVhigh", "CT"], prefix="cvcvct")
 
 
 plt.show()

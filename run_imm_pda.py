@@ -96,6 +96,7 @@ for Zk, xgtk in zip(Z, Xgt):
 ax1.scatter(*Z_plot_data.T, s=5, color="C1")
 ax1.plot(*Xgt.T[:2], color="C0", linewidth=1.5)
 ax1.set_title("True trajectory and the nearby measurements")
+fig1.savefig("figs/sim_trajectory.pdf")
 plt.show(block=False)
 
 # %% play measurement movie. Remember that you can cross out the window
@@ -170,6 +171,8 @@ ekf_filters.append(ekf.EKF(dynamic_models[0], measurement_model))
 ekf_filters.append(ekf.EKF(dynamic_models[1], measurement_model))
 imm_filter = imm.IMM(ekf_filters, PI)
 
+modes = ["CV", "CT"]
+
 tracker = pda.PDA(imm_filter, clutter_intensity, PD, gate_size)
 trackresult = track_and_evaluate_sequence(tracker, init_imm_state, Z, Xgt, Ts, K)
 
@@ -184,7 +187,8 @@ CI4K = np.array(scipy.stats.chi2.interval(confprob, 4 * K)) / K
 # trajectory
 fig3, axs3 = plt.subplots(1, 2, num=3, clear=True)
 utils.trajectory_plot(axs3[0], trackresult, Xgt)
-utils.mode_plot(axs3[1], trackresult, time)
+utils.mode_plot(axs3[1], trackresult, time, labels=modes)
+fig3.savefig("figs/sim_modeplot.pdf")
 
 # NEES
 NEESpos = trackresult.NEESpos
@@ -193,6 +197,7 @@ utils.confidence_interval_plot(axs4[0], time, trackresult.NEESpos, CI2, confprob
 utils.confidence_interval_plot(axs4[1], time, trackresult.NEESvel, CI2, confprob, "NEES vel")
 utils.confidence_interval_plot(axs4[2], time, trackresult.NEES, CI4, confprob, "NEES")
 fig4.tight_layout()
+fig4.savefig("figs/sim_neess.pdf")
 
 ANEESpos = trackresult.ANEESpos
 ANEESvel = trackresult.ANEESvel
@@ -205,8 +210,8 @@ print(f"ANEES = {ANEES:.2f} with CI = [{CI4K[0]:.2f}, {CI4K[1]:.2f}]")
 fig5, axs5 = plt.subplots(2, num=5, clear=True)
 axs5[0].plot(np.arange(K) * Ts, trackresult.pos_error)
 axs5[0].set_ylabel("position error")
-
 axs5[1].plot(np.arange(K) * Ts, trackresult.vel_error)
 axs5[1].set_ylabel("velocity error")
+fig5.savefig("figs/sim_errorplot.pdf")
 
 plt.show()

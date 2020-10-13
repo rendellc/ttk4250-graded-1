@@ -2,6 +2,8 @@ import scipy
 import scipy.io
 import scipy.stats
 
+import csv
+
 import numpy as np
 import matplotlib
 import matplotlib.pyplot as plt
@@ -127,14 +129,13 @@ def trajectory_plot(ax, trackresult, Xgt):
 
     ax.plot(*tr.x_hat.T[:2], label=r"$\hat x$")
     ax.plot(*Xgt.T[:2], label="$x$")
-    ax.set_title(
-        f"RMSE(pos, vel) = ({tr.posRMSE:.3f}, {tr.velRMSE:.3f})\npeak_dev(pos, vel) = ({tr.peak_pos_deviation:.3f}, {tr.peak_vel_deviation:.3f})"
-    )
+    # ax.set_title(
+    #     f"RMSE(pos, vel) = ({tr.posRMSE:.3f}, {tr.velRMSE:.3f})\npeak_dev(pos, vel) = ({tr.peak_pos_deviation:.3f}, {tr.peak_vel_deviation:.3f})"
+    # )
     ax.axis("equal")
 
 def mode_plot(ax, trackresult, time, labels):
     # probabilities
-    print(trackresult.prob_hat.shape)
     for i in range(len(labels)):
         mode_prob = trackresult.prob_hat[:,i]
         ax.plot(time, mode_prob, label=labels[i])
@@ -186,20 +187,22 @@ def evaluate_on_joyride(tracker, init_state, do_play_estimation_movie = False, s
     assert len(Z) == len(Xgt)
 
     prefix = figdir + prefix
+    print(f"Saving figures to {prefix}_*.pdf")
 
     # plot measurements close to the trajectory
-    # fig1, ax1 = plt.subplots(num=1, clear=True)
-    # Z_plot_data = np.empty((0, 2), dtype=float)
-    # plot_measurement_distance = 45
-    # for Zk, xgtk in zip(Z, Xgt):
-    #     to_plot = np.linalg.norm(Zk - xgtk[None:2], axis=1) <= plot_measurement_distance
-    #     Z_plot_data = np.append(Z_plot_data, Zk[to_plot], axis=0)
+    fig1, ax1 = plt.subplots(num=1, clear=True)
+    Z_plot_data = np.empty((0, 2), dtype=float)
+    plot_measurement_distance = 45
+    for Zk, xgtk in zip(Z, Xgt):
+        to_plot = np.linalg.norm(Zk - xgtk[None:2], axis=1) <= plot_measurement_distance
+        Z_plot_data = np.append(Z_plot_data, Zk[to_plot], axis=0)
 
-    # ax1.scatter(*Z_plot_data.T, color="C1")
-    # ax1.plot(*Xgt.T[:2], color="C0", linewidth=1.5)
-    # ax1.set_title("True trajectory and the nearby measurements")
-    # fig1.tight_layout()
-    # fig1.savefig(prefix+"_trajectory.pdf")
+    ax1.scatter(*Z_plot_data.T, color="C1")
+    ax1.plot(*Xgt.T[:2], color="C0", linewidth=1.5)
+    ax1.set_title("True trajectory and the nearby measurements")
+    # ax1.set_aspect("equal")
+    #fig1.tight_layout()
+    fig1.savefig(prefix+"_trajectory.pdf")
 
     # %% play measurement movie. Remember that you can cross out the window
     do_play_measurement_movie = False
@@ -222,10 +225,23 @@ def evaluate_on_joyride(tracker, init_state, do_play_estimation_movie = False, s
     CI2K = np.array(scipy.stats.chi2.interval(confprob, 2 * K)) / K
     CI4K = np.array(scipy.stats.chi2.interval(confprob, 4 * K)) / K
 
+    # write ANEESs to csv file
+    with open(prefix + "_results.csv", 'w', newline='') as csvfile:
+        writer = csv.writer(csvfile, delimiter=',',
+                            quotechar='|', quoting=csv.QUOTE_MINIMAL)
+        writer.writerow(["Type", "value"])
+        writer.writerow(["ANEESpos", round(tr.ANEESpos,3)])
+        writer.writerow(["ANEESvel", round(tr.ANEESvel,3)])
+        writer.writerow(["ANEES", round(tr.ANEES,3)])
+        writer.writerow(["RMSEpos", round(tr.posRMSE,2)])
+        writer.writerow(["RMSEvel", round(tr.velRMSE,2)])
+        writer.writerow(["peak_dev_pos", round(tr.peak_pos_deviation,2)])
+        writer.writerow(["peak_dev_vel", round(tr.peak_vel_deviation,2)])
+
     time = np.cumsum(Ts)
 
     if isinstance(tracker.state_filter, imm.IMM):
-        print("Tracker uses IMM")
+        # print("Tracker uses IMM")
 
         # %% IMM-tracker plots
         # trajectory
@@ -240,7 +256,7 @@ def evaluate_on_joyride(tracker, init_state, do_play_estimation_movie = False, s
         confidence_interval_plot(axs4[0], time, tr.NEESpos, CI2, confprob, "NEES pos")
         confidence_interval_plot(axs4[1], time, tr.NEESvel, CI2, confprob, "NEES vel")
         confidence_interval_plot(axs4[2], time, tr.NEES, CI4, confprob, "NEES")
-        # fig4.tight_layout()
+        fig4.tight_layout()
         fig4.savefig(prefix+"_confidence_intervals.pdf")
 
         print(f"ANEESpos = {tr.ANEESpos:.2f} with CI = [{CI2K[0]:.2f}, {CI2K[1]:.2f}]")
@@ -259,7 +275,7 @@ def evaluate_on_joyride(tracker, init_state, do_play_estimation_movie = False, s
             play_estimation_movie(tracker, Z, trackresult.predict_list, trackresult.update_list, trackresult.prob_hat, start_k, end_k)
 
     elif isinstance(tracker.state_filter, ekf.EKF):
-        print("Tracker uses EKF")
+        # print("Tracker uses EKF")
 
         # %% EKF-tracker plots
         fig, ax = plt.subplots(num=3, clear=True)

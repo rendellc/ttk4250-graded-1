@@ -138,26 +138,31 @@ tracker = pda.PDA(imm_filter, clutter_intensity, PD, gate_size)
 utils.evaluate_on_joyride(tracker, init_imm_state, False, 60, 60+10, modes=["CV", "CT"], prefix="cvct")
 
 
-
 # %% IMM-PDA with CV/CT/CV-models
 # sensor
-sigma_z = 6
+sigma_z = 10
 clutter_intensity = 0.5e-4
 PD = 0.95
 gate_size = 4
 
 # dynamic models
-sigma_a_CV_low = 2
+sigma_a_CV_low = 0.5
 sigma_a_CV_high = 5
-sigma_a_CT = 10
-sigma_omega = 0.03*np.pi
+sigma_a_CT = 0.5
+
+dt = 2.5
+sigma_omega = (1/(2*3*dt**2))*np.pi
 
 # markov chain
 PI11 = 0.98
 PI22 = 0.98
 PI33 = 0.98
 
-PI = np.array([[PI11, (1 - PI11)/2, (1-PI11)/2], [(1 - PI22)/2, PI22, (1-PI22)/2], [(1-PI33)/2, (1-PI33)/2, PI33]])
+#PI = np.array([[PI11, (1 - PI11)/2, (1-PI11)/2], [(1 - PI22)/2, PI22, (1-PI22)/2], [(1-PI33)/2, (1-PI33)/2, PI33]])
+PI = np.array([
+    [PI11, 5*(1 - PI11)/6, (1-PI11)/6],
+    [5*(1 - PI22)/6, PI22, (1-PI22)/6], 
+    [5*(1-PI33)/6, (1-PI33)/6, PI33]])
 
 assert np.allclose(np.sum(PI, axis=1), 1), "rows of PI must sum to 1"
 

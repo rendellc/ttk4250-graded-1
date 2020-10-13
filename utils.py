@@ -176,10 +176,12 @@ def play_measurement_movie(fig, ax, play_slice, Z, dt):
         plt.pause(plotpause)
 
 
-def evaluate_on_joyride(tracker, init_state, do_play_estimation_movie = False, start_k = 0, end_k = 10, prefix = ""):
+def evaluate_on_joyride(tracker, init_state, do_play_estimation_movie = False, start_k = 0, end_k = 10, prefix = "", figdir = "figs/"):
     Z, Xgt, K, Ts = load_pda_data("data_joyride.mat")
     assert len(Z) == K
     assert len(Z) == len(Xgt)
+
+    prefix = figdir + prefix
 
     # plot measurements close to the trajectory
     fig1, ax1 = plt.subplots(num=1, clear=True)

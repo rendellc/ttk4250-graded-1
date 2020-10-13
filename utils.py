@@ -144,6 +144,10 @@ def mode_plot(ax, trackresult, time, labels):
     ax.set_xlabel("time")
     ax.legend(loc="upper right")
 
+def mode_scatter(ax, trackresult, mode_index, threshold):
+    mode_indexes = [k for k in range(len(trackresult.prob_hat)) if trackresult.prob_hat[k][mode_index] > threshold]
+    ax.scatter(trackresult.x_hat[mode_indexes, 0], trackresult.x_hat[mode_indexes, 1], c='r')
+
 def confidence_interval_plot(ax, time, NEES, CI, confprob, ylabel):
     inCI = np.mean((CI[0] <= NEES) * (NEES <= CI[1]))
 
@@ -247,6 +251,8 @@ def evaluate_on_joyride(tracker, init_state, do_play_estimation_movie = False, s
         # trajectory
         fig3, axs3 = plt.subplots(1, 2, num=3, clear=True)
         trajectory_plot(axs3[0], trackresult, Xgt)
+        mode_scatter(axs3[0], trackresult, -1, 0.5)
+
         # probabilities
         mode_plot(axs3[1], trackresult, time, labels=modes)
         fig3.savefig(prefix+"_modeplot.pdf")

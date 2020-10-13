@@ -176,7 +176,7 @@ def play_measurement_movie(fig, ax, play_slice, Z, dt):
         plt.pause(plotpause)
 
 
-def evaluate_on_joyride(tracker, init_state, do_play_estimation_movie = False, start_k = 0, end_k = 10, plotfileprefix = ""):
+def evaluate_on_joyride(tracker, init_state, do_play_estimation_movie = False, start_k = 0, end_k = 10, prefix = ""):
     Z, Xgt, K, Ts = load_pda_data("data_joyride.mat")
     assert len(Z) == K
     assert len(Z) == len(Xgt)
@@ -193,7 +193,7 @@ def evaluate_on_joyride(tracker, init_state, do_play_estimation_movie = False, s
     ax1.plot(*Xgt.T[:2], color="C0", linewidth=1.5)
     ax1.set_title("True trajectory and the nearby measurements")
     fig1.tight_layout()
-    fig1.savefig(plotfileprefix+"true_trajectory.eps")
+    fig1.savefig(prefix+"_trajectory.eps")
 
     # %% play measurement movie. Remember that you can cross out the window
     do_play_measurement_movie = False
@@ -223,16 +223,19 @@ def evaluate_on_joyride(tracker, init_state, do_play_estimation_movie = False, s
 
         # %% IMM-tracker plots
         # trajectory
-        fig, axs3 = plt.subplots(1, 2, num=3, clear=True)
+        fig3, axs3 = plt.subplots(1, 2, num=3, clear=True)
         trajectory_plot(axs3[0], trackresult, Xgt)
         # probabilities
         mode_plot(axs3[1], trackresult, time)
+        fig3.savefig(prefix+"_modeplot.eps")
 
         # NEES
-        fig, axs4 = plt.subplots(3, sharex=True, num=4, clear=True)
+        fig4, axs4 = plt.subplots(3, sharex=True, num=4, clear=True)
         confidence_interval_plot(axs4[0], time, tr.NEESpos, CI2, confprob, "NEES pos")
         confidence_interval_plot(axs4[1], time, tr.NEESvel, CI2, confprob, "NEES vel")
         confidence_interval_plot(axs4[2], time, tr.NEES, CI4, confprob, "NEES")
+        fig4.tight_layout()
+        fig4.savefig(prefix+"_confidence_intervals.eps")
 
         print(f"ANEESpos = {tr.ANEESpos:.2f} with CI = [{CI2K[0]:.2f}, {CI2K[1]:.2f}]")
         print(f"ANEESvel = {tr.ANEESvel:.2f} with CI = [{CI2K[0]:.2f}, {CI2K[1]:.2f}]")
@@ -244,6 +247,7 @@ def evaluate_on_joyride(tracker, init_state, do_play_estimation_movie = False, s
         axs5[0].set_ylabel("position error")
         axs5[1].plot(time, tr.vel_error)
         axs5[1].set_ylabel("velocity error")
+        fig5.savefig(prefix+"_error_plot.eps")
 
         if do_play_estimation_movie:
             play_estimation_movie(tracker, Z, trackresult.predict_list, trackresult.update_list, start_k, end_k)
@@ -260,6 +264,7 @@ def evaluate_on_joyride(tracker, init_state, do_play_estimation_movie = False, s
         confidence_interval_plot(axs4[1], time, tr.NEESvel, CI2, confprob, "NEES vel")
         confidence_interval_plot(axs4[2], time, tr.NEES, CI4, confprob, "NEES")
         fig4.tight_layout()
+        fig4.savefig(prefix+"_confidence_intervals.eps")
 
         print(f"ANEESpos = {tr.ANEESpos:.2f} with CI = [{CI2K[0]:.2f}, {CI2K[1]:.2f}]")
         print(f"ANEESvel = {tr.ANEESvel:.2f} with CI = [{CI2K[0]:.2f}, {CI2K[1]:.2f}]")
@@ -270,8 +275,9 @@ def evaluate_on_joyride(tracker, init_state, do_play_estimation_movie = False, s
         axs5[0].set_ylabel("position error")
         axs5[1].plot(time, tr.vel_error)
         axs5[1].set_ylabel("velocity error")
+        fig5.savefig(prefix+"_error_plot.eps")
     else:
-        print("Invalid tracker type")
+        raise RuntimeError("Invalid tracker type")
 
 
 def play_estimation_movie(tracker, Z, predict_list, update_list, start_k, end_k):

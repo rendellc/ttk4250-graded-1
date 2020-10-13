@@ -13,13 +13,11 @@ from mixturedata import MixtureParameters
 
 import utils
 
-
 # %% setup and track
 
 # init values
 mean_init = np.array([7000, 3500, 0, 0, 0])
 cov_init = np.diag([100, 100, 10, 10, 0.1]) ** 2  
-
 
 # %% PDAF using EKF with CV-model
 # sensor
@@ -37,11 +35,10 @@ dynamic_model = dynamicmodels.WhitenoiseAccelleration(sigma_a_CV, n=5)
 ekf_filter = ekf.EKF(dynamic_model, measurement_model)
 
 tracker = pda.PDA(ekf_filter, clutter_intensity, PD, gate_size)
-
 init_state = tracker.init_filter_state({"mean": mean_init, "cov": cov_init})
 #
 # track
-utils.evaluate_on_joyride(tracker, init_state)
+utils.evaluate_on_joyride(tracker, init_state, prefix="cv")
 
 
 # %% PDAF using EKF with CT-model
@@ -65,7 +62,7 @@ tracker = pda.PDA(ekf_filter, clutter_intensity, PD, gate_size)
 init_state = tracker.init_filter_state({"mean": mean_init, "cov": cov_init})
 
 # track
-utils.evaluate_on_joyride(tracker, init_state)
+utils.evaluate_on_joyride(tracker, init_state, prefix="ct")
 
 
 
@@ -111,7 +108,7 @@ imm_filter = imm.IMM(ekf_filters, PI)
 
 tracker = pda.PDA(imm_filter, clutter_intensity, PD, gate_size)
 
-utils.evaluate_on_joyride(tracker, init_imm_state, False, 60, 60+10)
+utils.evaluate_on_joyride(tracker, init_imm_state, False, 60, 60+10, prefix="cvct")
 
 
 # %% IMM-PDA with CV/CT/CV-models
@@ -160,7 +157,7 @@ imm_filter = imm.IMM(ekf_filters, PI)
 
 tracker = pda.PDA(imm_filter, clutter_intensity, PD, gate_size)
 
-utils.evaluate_on_joyride(tracker, init_imm_state, False, 60, 60+10)
+utils.evaluate_on_joyride(tracker, init_imm_state, False, 60, 60+10, prefix="cvctcv")
 
 
 import matplotlib.pyplot as plt

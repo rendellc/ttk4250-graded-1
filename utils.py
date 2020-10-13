@@ -256,7 +256,7 @@ def evaluate_on_joyride(tracker, init_state, do_play_estimation_movie = False, s
         fig5.savefig(prefix+"_error_plot.pdf")
 
         if do_play_estimation_movie:
-            play_estimation_movie(tracker, Z, trackresult.predict_list, trackresult.update_list, start_k, end_k)
+            play_estimation_movie(tracker, Z, trackresult.predict_list, trackresult.update_list, trackresult.prob_hat, start_k, end_k)
 
     elif isinstance(tracker.state_filter, ekf.EKF):
         print("Tracker uses EKF")
@@ -286,7 +286,7 @@ def evaluate_on_joyride(tracker, init_state, do_play_estimation_movie = False, s
         raise RuntimeError("Invalid tracker type")
 
 
-def play_estimation_movie(tracker, Z, predict_list, update_list, start_k, end_k):
+def play_estimation_movie(tracker, Z, predict_list, update_list, prob_hat, start_k, end_k):
     # %% TBD: estimation "movie"
 
     mTL = 0.2  # maximum transparancy (between 0 and 1);

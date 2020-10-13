@@ -141,16 +141,16 @@ utils.evaluate_on_joyride(tracker, init_imm_state, False, 60, 60+10, modes=["CV"
 
 # %% IMM-PDA with CV/CT/CV-models
 # sensor
-sigma_z = 10
+sigma_z = 6
 clutter_intensity = 0.5e-4
 PD = 0.95
 gate_size = 4
 
 # dynamic models
-sigma_a_CV_low = 0.1
-sigma_a_CV_high = 1
-sigma_a_CT = 0.2
-sigma_omega = 0.005*np.pi
+sigma_a_CV_low = 2
+sigma_a_CV_high = 5
+sigma_a_CT = 10
+sigma_omega = 0.03*np.pi
 
 # markov chain
 PI11 = 0.98
@@ -185,7 +185,7 @@ imm_filter = imm.IMM(ekf_filters, PI)
 
 tracker = pda.PDA(imm_filter, clutter_intensity, PD, gate_size)
 
-utils.evaluate_on_joyride(tracker, init_imm_state, False, 60, 60+10, modes=["CV", "CVhigh", "CT"], prefix="cvcvct")
+utils.evaluate_on_joyride(tracker, init_imm_state, False, 60, 60+1, modes=["CV", "CVhigh", "CT"], prefix="cvcvct")
 
 
 plt.show()

@@ -184,18 +184,18 @@ def evaluate_on_joyride(tracker, init_state, do_play_estimation_movie = False, s
     prefix = figdir + prefix
 
     # plot measurements close to the trajectory
-    fig1, ax1 = plt.subplots(num=1, clear=True)
-    Z_plot_data = np.empty((0, 2), dtype=float)
-    plot_measurement_distance = 45
-    for Zk, xgtk in zip(Z, Xgt):
-        to_plot = np.linalg.norm(Zk - xgtk[None:2], axis=1) <= plot_measurement_distance
-        Z_plot_data = np.append(Z_plot_data, Zk[to_plot], axis=0)
+    # fig1, ax1 = plt.subplots(num=1, clear=True)
+    # Z_plot_data = np.empty((0, 2), dtype=float)
+    # plot_measurement_distance = 45
+    # for Zk, xgtk in zip(Z, Xgt):
+    #     to_plot = np.linalg.norm(Zk - xgtk[None:2], axis=1) <= plot_measurement_distance
+    #     Z_plot_data = np.append(Z_plot_data, Zk[to_plot], axis=0)
 
-    ax1.scatter(*Z_plot_data.T, color="C1")
-    ax1.plot(*Xgt.T[:2], color="C0", linewidth=1.5)
-    ax1.set_title("True trajectory and the nearby measurements")
-    fig1.tight_layout()
-    fig1.savefig(prefix+"_trajectory.eps")
+    # ax1.scatter(*Z_plot_data.T, color="C1")
+    # ax1.plot(*Xgt.T[:2], color="C0", linewidth=1.5)
+    # ax1.set_title("True trajectory and the nearby measurements")
+    # fig1.tight_layout()
+    # fig1.savefig(prefix+"_trajectory.pdf")
 
     # %% play measurement movie. Remember that you can cross out the window
     do_play_measurement_movie = False
@@ -229,15 +229,15 @@ def evaluate_on_joyride(tracker, init_state, do_play_estimation_movie = False, s
         trajectory_plot(axs3[0], trackresult, Xgt)
         # probabilities
         mode_plot(axs3[1], trackresult, time)
-        fig3.savefig(prefix+"_modeplot.eps")
+        fig3.savefig(prefix+"_modeplot.pdf")
 
         # NEES
         fig4, axs4 = plt.subplots(3, sharex=True, num=4, clear=True)
         confidence_interval_plot(axs4[0], time, tr.NEESpos, CI2, confprob, "NEES pos")
         confidence_interval_plot(axs4[1], time, tr.NEESvel, CI2, confprob, "NEES vel")
         confidence_interval_plot(axs4[2], time, tr.NEES, CI4, confprob, "NEES")
-        fig4.tight_layout()
-        fig4.savefig(prefix+"_confidence_intervals.eps")
+        # fig4.tight_layout()
+        fig4.savefig(prefix+"_confidence_intervals.pdf")
 
         print(f"ANEESpos = {tr.ANEESpos:.2f} with CI = [{CI2K[0]:.2f}, {CI2K[1]:.2f}]")
         print(f"ANEESvel = {tr.ANEESvel:.2f} with CI = [{CI2K[0]:.2f}, {CI2K[1]:.2f}]")
@@ -249,7 +249,7 @@ def evaluate_on_joyride(tracker, init_state, do_play_estimation_movie = False, s
         axs5[0].set_ylabel("position error")
         axs5[1].plot(time, tr.vel_error)
         axs5[1].set_ylabel("velocity error")
-        fig5.savefig(prefix+"_error_plot.eps")
+        fig5.savefig(prefix+"_error_plot.pdf")
 
         if do_play_estimation_movie:
             play_estimation_movie(tracker, Z, trackresult.predict_list, trackresult.update_list, start_k, end_k)
@@ -265,8 +265,8 @@ def evaluate_on_joyride(tracker, init_state, do_play_estimation_movie = False, s
         confidence_interval_plot(axs4[0], time, tr.NEESpos, CI2, confprob, "NEES pos")
         confidence_interval_plot(axs4[1], time, tr.NEESvel, CI2, confprob, "NEES vel")
         confidence_interval_plot(axs4[2], time, tr.NEES, CI4, confprob, "NEES")
-        fig4.tight_layout()
-        fig4.savefig(prefix+"_confidence_intervals.eps")
+        # fig4.tight_layout()
+        fig4.savefig(prefix+"_confidence_intervals.pdf")
 
         print(f"ANEESpos = {tr.ANEESpos:.2f} with CI = [{CI2K[0]:.2f}, {CI2K[1]:.2f}]")
         print(f"ANEESvel = {tr.ANEESvel:.2f} with CI = [{CI2K[0]:.2f}, {CI2K[1]:.2f}]")
@@ -277,7 +277,7 @@ def evaluate_on_joyride(tracker, init_state, do_play_estimation_movie = False, s
         axs5[0].set_ylabel("position error")
         axs5[1].plot(time, tr.vel_error)
         axs5[1].set_ylabel("velocity error")
-        fig5.savefig(prefix+"_error_plot.eps")
+        fig5.savefig(prefix+"_error_plot.pdf")
     else:
         raise RuntimeError("Invalid tracker type")
 

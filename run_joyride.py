@@ -1,4 +1,5 @@
 # %%
+import matplotlib.pyplot as plt
 import numpy as np
 from typing import List
 
@@ -13,8 +14,33 @@ from mixturedata import MixtureParameters
 
 import utils
 
-# %% setup and track
+# set styles
+try:
+    # installed with "pip install SciencePLots" (https://github.com/garrettj403/SciencePlots.git)
+    # gives quite nice plots
+    plt_styles = ["science", "grid", "bright", "no-latex"]
+    plt.style.use(plt_styles)
+    print(f"pyplot using style set {plt_styles}")
+except Exception as e:
+    print(e)
+    print("setting grid and only grid and legend manually")
+    plt.rcParams.update(
+        {
+            # setgrid
+            "axes.grid": True,
+            "grid.linestyle": ":",
+            "grid.color": "k",
+            "grid.alpha": 0.5,
+            "grid.linewidth": 0.5,
+            # Legend
+            "legend.frameon": True,
+            "legend.framealpha": 1.0,
+            "legend.fancybox": True,
+            "legend.numpoints": 1,
+        }
+    )
 
+# %% setup and track
 # init values
 mean_init = np.array([7000, 3500, 0, 0, 0])
 cov_init = np.diag([100, 100, 10, 10, 0.1]) ** 2  
@@ -160,5 +186,4 @@ tracker = pda.PDA(imm_filter, clutter_intensity, PD, gate_size)
 utils.evaluate_on_joyride(tracker, init_imm_state, False, 60, 60+10, prefix="cvctcv")
 
 
-import matplotlib.pyplot as plt
 plt.show()

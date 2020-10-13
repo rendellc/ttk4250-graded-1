@@ -7,9 +7,11 @@ import measurementmodels
 import ekf
 import imm
 import pda
-import load_track_and_plot_joyride as joyride
+#import load_track_and_plot_joyride as joyride
 from gaussparams import GaussParams
 from mixturedata import MixtureParameters
+
+import utils
 
 
 # %% setup and track
@@ -37,9 +39,9 @@ ekf_filter = ekf.EKF(dynamic_model, measurement_model)
 tracker = pda.PDA(ekf_filter, clutter_intensity, PD, gate_size)
 
 init_state = tracker.init_filter_state({"mean": mean_init, "cov": cov_init})
-
+#
 # track
-joyride.evaluate_on_joyride(tracker, init_state)
+utils.evaluate_on_joyride(tracker, init_state)
 
 
 # %% PDAF using EKF with CT-model
@@ -63,7 +65,7 @@ tracker = pda.PDA(ekf_filter, clutter_intensity, PD, gate_size)
 init_state = tracker.init_filter_state({"mean": mean_init, "cov": cov_init})
 
 # track
-joyride.evaluate_on_joyride(tracker, init_state)
+utils.evaluate_on_joyride(tracker, init_state)
 
 
 
@@ -109,7 +111,7 @@ imm_filter = imm.IMM(ekf_filters, PI)
 
 tracker = pda.PDA(imm_filter, clutter_intensity, PD, gate_size)
 
-joyride.evaluate_on_joyride(tracker, init_imm_state, False, 60, 60+10)
+utils.evaluate_on_joyride(tracker, init_imm_state, False, 60, 60+10)
 
 
 # %% IMM-PDA with CV/CT/CV-models
@@ -158,7 +160,7 @@ imm_filter = imm.IMM(ekf_filters, PI)
 
 tracker = pda.PDA(imm_filter, clutter_intensity, PD, gate_size)
 
-joyride.evaluate_on_joyride(tracker, init_imm_state, False, 60, 60+10)
+utils.evaluate_on_joyride(tracker, init_imm_state, False, 60, 60+10)
 
 
 import matplotlib.pyplot as plt

@@ -93,9 +93,10 @@ for Zk, xgtk in zip(Z, Xgt):
     to_plot = np.linalg.norm(Zk - xgtk[None:2], axis=1) <= plot_measurement_distance
     Z_plot_data = np.append(Z_plot_data, Zk[to_plot], axis=0)
 
-ax1.scatter(*Z_plot_data.T, s=5, color="C1")
-ax1.plot(*Xgt.T[:2], color="C0", linewidth=1.5)
-ax1.set_title("True trajectory and the nearby measurements")
+ax1.scatter(*Z_plot_data.T, s=5, color="C1", label="nearby measurements")
+ax1.plot(*Xgt.T[:2], color="C0", linewidth=1.5, label="ground truth")
+# ax1.set_title("True trajectory and the nearby measurements")
+ax1.legend()
 fig1.tight_layout()
 fig1.savefig("figs/sim_trajectory.pdf")
 plt.show(block=False)
@@ -188,12 +189,19 @@ utils.write_csv_results(trackresult, confprob, "figs/sim")
 
 # %% plots
 # trajectory
-fig3, axs3 = plt.subplots(1, 2, num=3, clear=True)
-utils.trajectory_plot(axs3[0], trackresult, Xgt)
-utils.mode_scatter(axs3[0], trackresult, 1)
-utils.mode_plot(axs3[1], trackresult, time, labels=modes)
+fig3, axs3 = plt.subplots(1, 1, num=3, clear=True)
+#utils.trajectory_plot(axs3[0], trackresult, Xgt)
+utils.mode_plot(axs3, trackresult, time, labels=modes)
 fig3.tight_layout()
 fig3.savefig("figs/sim_modeplot.pdf")
+
+fig6, axs6 = plt.subplots(1, 1, num=6, clear=True)
+utils.trajectory_plot(axs6, trackresult, Xgt)
+utils.mode_scatter(axs6, trackresult, 1)
+axs6.set_xlabel("x")
+axs6.set_ylabel("y", rotation=0)
+fig6.tight_layout()
+fig6.savefig("figs/sim_modescatter.pdf")
 
 # NEES
 NEESpos = trackresult.NEESpos

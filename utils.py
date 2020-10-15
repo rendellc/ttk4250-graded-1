@@ -134,11 +134,17 @@ def trajectory_plot(ax, trackresult, Xgt):
     # )
     ax.axis("equal")
 
-def mode_plot(ax, trackresult, time, labels):
-    # probabilities
-    for i in range(len(labels)):
-        mode_prob = trackresult.prob_hat[:,i]
-        ax.plot(time, mode_prob, label=labels[i])
+def mode_plot(ax, trackresult, time, labels, stackplot = True):
+    if stackplot:
+        modes = trackresult.prob_hat
+        ax.stackplot(time, modes.T, labels=labels)
+    else:
+        # probabilities
+        for i in range(len(labels)):
+            mode_prob = trackresult.prob_hat[:,i]
+            ax.plot(time, mode_prob, label=labels[i])
+
+    ax.set_xlim(time[0], time[~0])
     ax.set_ylim([0, 1])
     ax.set_ylabel("mode probability")
     ax.set_xlabel("time")
@@ -237,10 +243,11 @@ def evaluate_on_joyride(tracker, init_state, do_play_estimation_movie = False, s
         to_plot = np.linalg.norm(Zk - xgtk[None:2], axis=1) <= plot_measurement_distance
         Z_plot_data = np.append(Z_plot_data, Zk[to_plot], axis=0)
 
-    ax1.scatter(*Z_plot_data.T, color="C1")
-    ax1.plot(*Xgt.T[:2], color="C0", linewidth=1.5)
-    ax1.set_title("True trajectory and the nearby measurements")
-    # ax1.set_aspect("equal")
+    ax1.scatter(*Z_plot_data.T, color="C1", label="nearby measurements")
+    ax1.plot(*Xgt.T[:2], color="C0", linewidth=1.5, label="ground truth")
+    # ax1.set_title("True trajectory and the nearby measurements")
+    ax1.set_aspect("equal")
+    ax1.legend()
     fig1.tight_layout()
     fig1.savefig(prefix+"_trajectory.pdf")
 
@@ -260,35 +267,11 @@ def evaluate_on_joyride(tracker, init_state, do_play_estimation_movie = False, s
 
     # consistency
     confprob = 0.9
-    write_csv_results(tr, confprob, prefix)
-    # CI2 = np.array(scipy.stats.chi2.interval(confprob, 2))
-    # CI4 = np.array(scipy.stats.chi2.interval(confprob, 4))
-    # CI2K = np.array(scipy.stats.chi2.interval(confprob, 2 * K)) / K
-    # CI4K = np.array(scipy.stats.chi2.interval(confprob, 4 * K)) / K
-
-    # inNEESposCI = np.mean((CI2[0] <= tr.NEESpos) * (tr.NEESpos <= CI2[1]))
-    # inNEESvelCI = np.mean((CI2[0] <= tr.NEESvel) * (tr.NEESvel <= CI2[1]))
-    # inNEESCI = np.mean((CI4[0] <= tr.NEES) * (tr.NEES <= CI4[1]))
-
-    # # write ANEESs to csv file
-    # with open(prefix + "_results.csv", 'w', newline='') as csvfile:
-    #     writer = csv.writer(csvfile, delimiter=',',
-    #                         quotechar='|', quoting=csv.QUOTE_MINIMAL)
-    #     #writer.writerow(["Result", "value"])
-    #     writer.writerow(["ANEES pos", round(tr.ANEESpos,3)])
-    #     writer.writerow(["ANEES vel", round(tr.ANEESvel,3)])
-    #     writer.writerow(["ANEES", round(tr.ANEES,3)])
-    #     writer.writerow(["RMSE pos", round(tr.posRMSE,2)])
-    #     writer.writerow(["RMSE vel", round(tr.velRMSE,2)])
-    #     writer.writerow(["Peak dev pos", round(tr.peak_pos_deviation,2)])
-    #     writer.writerow(["Peak dev vel", round(tr.peak_vel_deviation,2)])
-    #     writer.writerow(["In NEES pos CI", f"{inNEESposCI:.2%}"])
-    #     writer.writerow(["In NEES vel CI", f"{inNEESvelCI:.2%}"])
-    #     writer.writerow(["In NEES CI", f"{inNEESCI:.2%}"])
     CI2 = np.array(scipy.stats.chi2.interval(confprob, 2))
     CI4 = np.array(scipy.stats.chi2.interval(confprob, 4))
     CI2K = np.array(scipy.stats.chi2.interval(confprob, 2 * K)) / K
     CI4K = np.array(scipy.stats.chi2.interval(confprob, 4 * K)) / K
+    write_csv_results(tr, confprob, prefix)
 
     time = np.cumsum(Ts)
 
@@ -297,15 +280,15 @@ def evaluate_on_joyride(tracker, init_state, do_play_estimation_movie = False, s
 
         # %% IMM-tracker plots
         # trajectory
-        fig3, axs = plt.subplots(1, 1, num=3, clear=True)
-        trajectory_plot(axs, trackresult, Xgt)
-        mode_scatter(axs, trackresult, -1)
+        fig3, axs3 = plt.subplots(1, 1, num=3, clear=True)
+        trajectory_plot(axs3, trackresult, Xgt)
+        mode_scatter(axs3, trackresult, -1)
         fig3.tight_layout()
         fig3.savefig(prefix+"_mode_scatter.pdf")
 
         # probabilities
-        fig6, axs = plt.subplots(1, 1, num=6, clear=True)
-        mode_plot(axs, trackresult, time, labels=modes)
+        fig6, axs6 = plt.subplots(1, 1, num=6, clear=True)
+        mode_plot(axs6, trackresult, time, labels=modes)
         fig6.tight_layout()
         fig6.savefig(prefix+"_modeplot.pdf")
 
@@ -371,7 +354,7 @@ def play_estimation_movie(tracker, Z, predict_list, update_list, prob_hat, start
     plot_range = slice(start_k, end_k)  # the range to go through
 
     # %k = 31; assert(all([k > 1, k <= K]), 'K must be in proper range')
-    fig6, axs6 = plt.subplots(1, 2, num=6, clear=True)
+    fig6, axs6 = plt.subplots(1, 2, num=10, clear=True)
     mode_lines = [axs6[0].plot(np.nan, np.nan, color=f"C{s}")[0] for s in range(2)]
     meas_sc = axs6[0].scatter(np.nan, np.nan, color="r", marker="x")
     meas_sc_true = axs6[0].scatter(np.nan, np.nan, color="g", marker="x")

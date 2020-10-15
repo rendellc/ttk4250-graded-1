@@ -66,6 +66,15 @@ init_state = tracker.init_filter_state({"mean": mean_init, "cov": cov_init})
 #
 # track
 utils.evaluate_on_joyride(tracker, init_state, modes = ["CV"], prefix="cv")
+# write parameters to file for latex
+parameters = {
+        r"$\sigma_z$": rf"${sigma_z}$",
+        r"$\lambda$": rf"${clutter_intensity}$",
+        r"$P_D$": rf"${PD}$",
+        r"$g$": rf"${gate_size}$",
+        r"$\sigma_{a,CV}$": rf"${sigma_a_CV}$",
+}
+utils.write_csv_parameters(parameters, prefix="figs/cv")
 
 
 # %% PDAF using EKF with CT-model
@@ -83,13 +92,20 @@ sigma_omega = 0.005 * np.pi
 measurement_model = measurementmodels.CartesianPosition(sigma_z, state_dim=5)
 dynamic_model = dynamicmodels.ConstantTurnrate(sigma_a_CT, sigma_omega)
 ekf_filter = ekf.EKF(dynamic_model, measurement_model)
-
 tracker = pda.PDA(ekf_filter, clutter_intensity, PD, gate_size)
-
 init_state = tracker.init_filter_state({"mean": mean_init, "cov": cov_init})
-
 # track
 utils.evaluate_on_joyride(tracker, init_state, modes=["CT"], prefix="ct")
+# write parameters to file for latex
+parameters = {
+        r"$\sigma_z$": rf"${sigma_z}$",
+        r"$\lambda$": rf"${clutter_intensity}$",
+        r"$P_D$": rf"${PD}$",
+        r"$g$": rf"${gate_size}$",
+        r"$\sigma_{a,CT}$": rf"${sigma_a_CT}$",
+        r"$\sigma_\omega$": rf"${sigma_omega/np.pi:.4f}\pi$",
+}
+utils.write_csv_parameters(parameters, prefix="figs/ct")
 
 
 
@@ -132,10 +148,20 @@ ekf_filters = []
 ekf_filters.append(ekf.EKF(dynamic_models[0], measurement_model))
 ekf_filters.append(ekf.EKF(dynamic_models[1], measurement_model))
 imm_filter = imm.IMM(ekf_filters, PI)
-
 tracker = pda.PDA(imm_filter, clutter_intensity, PD, gate_size)
-
 utils.evaluate_on_joyride(tracker, init_imm_state, False, 60, 60+10, modes=["CV", "CT"], prefix="cvct")
+
+# write parameters to file for latex
+parameters = {
+        r"$\sigma_z$": rf"${sigma_z}$",
+        r"$\lambda$": rf"${clutter_intensity}$",
+        r"$P_D$": rf"${PD}$",
+        r"$g$": rf"${gate_size}$",
+        r"$\sigma_{a,CV}$": rf"${sigma_a_CV}$",
+        r"$\sigma_{a,CT}$": rf"${sigma_a_CT}$",
+        r"$\sigma_\omega$": rf"${sigma_omega/np.pi:.4f}\pi$",
+}
+utils.write_csv_parameters(parameters, prefix="figs/cvct")
 
 
 # %% IMM-PDA with CV/CT/CV-models
@@ -191,6 +217,17 @@ imm_filter = imm.IMM(ekf_filters, PI)
 tracker = pda.PDA(imm_filter, clutter_intensity, PD, gate_size)
 
 utils.evaluate_on_joyride(tracker, init_imm_state, False, 60, 60+1, modes=["CV", "CVhigh", "CT"], prefix="cvcvct")
+parameters = {
+        r"$\sigma_z$": rf"${sigma_z}$",
+        r"$\lambda$": rf"${clutter_intensity}$",
+        r"$P_D$": rf"${PD}$",
+        r"$g$": rf"${gate_size}$",
+        r"$\sigma_{a,CV}$": rf"${sigma_a_CV_low}$",
+        r"$\sigma_{a,CVhigh}$": rf"${sigma_a_CV_high}$",
+        r"$\sigma_{a,CT}$": rf"${sigma_a_CT}$",
+        r"$\sigma_\omega$": rf"${sigma_omega/np.pi:.4f}\pi$",
+}
+utils.write_csv_parameters(parameters, prefix="figs/cvcvct")
 
 
 plt.show()

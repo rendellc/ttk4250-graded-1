@@ -228,4 +228,15 @@ axs5[1].set_ylabel("velocity error")
 fig5.tight_layout()
 fig5.savefig("figs/sim_errorplot.pdf")
 
+parameters = {
+        r"$\sigma_z$": rf"${sigma_z}$",
+        r"$\lambda$": rf"${clutter_intensity}$",
+        r"$P_D$": rf"${PD}$",
+        r"$g$": rf"${gate_size}$",
+        r"$\sigma_{a,CV}$": rf"${sigma_a_CV}$",
+        r"$\sigma_{a,CT}$": rf"${sigma_a_CT}$",
+        r"$\sigma_\omega$": rf"{sigma_omega/np.pi:.4f}pi",
+}
+utils.write_csv_parameters(parameters, prefix="figs/sim")
+
 plt.show()

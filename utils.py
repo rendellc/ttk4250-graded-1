@@ -186,6 +186,41 @@ def play_measurement_movie(fig, ax, play_slice, Z, dt):
         plt.pause(plotpause)
 
 
+def write_csv_results(tr: TrackResult, confprob, prefix):
+    K = len(tr.x_hat)
+
+    # write ANEESs to csv file
+    with open(prefix + "_results.csv", 'w', newline='') as csvfile:
+        writer = csv.writer(csvfile, delimiter=',',
+                            quotechar='|', quoting=csv.QUOTE_MINIMAL)
+        #writer.writerow(["Result", "value"])
+        # writer.writerow(["ANEES pos", round(tr.ANEESpos,3)])
+        # writer.writerow(["ANEES vel", round(tr.ANEESvel,3)])
+        # writer.writerow(["ANEES", round(tr.ANEES,3)])
+        writer.writerow(["RMSE pos", round(tr.posRMSE,2)])
+        writer.writerow(["RMSE vel", round(tr.velRMSE,2)])
+        writer.writerow(["Peak dev pos", round(tr.peak_pos_deviation,2)])
+        writer.writerow(["Peak dev vel", round(tr.peak_vel_deviation,2)])
+
+    CI2 = np.array(scipy.stats.chi2.interval(confprob, 2))
+    CI4 = np.array(scipy.stats.chi2.interval(confprob, 4))
+    CI2K = np.array(scipy.stats.chi2.interval(confprob, 2 * K)) / K
+    CI4K = np.array(scipy.stats.chi2.interval(confprob, 4 * K)) / K
+    inNEESposCI = np.mean((CI2[0] <= tr.NEESpos) * (tr.NEESpos <= CI2[1]))
+    inNEESvelCI = np.mean((CI2[0] <= tr.NEESvel) * (tr.NEESvel <= CI2[1]))
+    inNEESCI = np.mean((CI4[0] <= tr.NEES) * (tr.NEES <= CI4[1]))
+    with open(prefix + "_consistency.csv", 'w', newline='') as csvfile:
+        writer = csv.writer(csvfile, delimiter=',',
+                            quotechar='|', quoting=csv.QUOTE_MINIMAL)
+
+        writer.writerow(["ANEES pos", round(tr.ANEESpos,3), f"{CI2K[0]:.2f}", f"{CI2K[1]:.2f}"])
+        writer.writerow(["ANEES vel", round(tr.ANEESvel,3), f"{CI2K[0]:.2f}", f"{CI2K[1]:.2f}"])
+        writer.writerow(["ANEES", round(tr.ANEES,3), f"{CI4K[0]:.2f}", f"{CI4K[1]:.2f}"] )
+        writer.writerow(["In NEES pos CI", f"{inNEESposCI:.2%}", f"{CI2[0]:.2f}", f"{CI2[1]:.2f}"])
+        writer.writerow(["In NEES vel CI", f"{inNEESvelCI:.2%}", f"{CI2[0]:.2f}", f"{CI2[1]:.2f}"])
+        writer.writerow(["In NEES CI", f"{inNEESCI:.2%}", f"{CI4[0]:.2f}", f"{CI4[1]:.2f}"])
+
+
 def evaluate_on_joyride(tracker, init_state, do_play_estimation_movie = False, start_k = 0, end_k = 10, modes = [], prefix = "", figdir = "figs/"):
     Z, Xgt, K, Ts = load_pda_data("data_joyride.mat")
     assert len(Z) == K
@@ -206,7 +241,7 @@ def evaluate_on_joyride(tracker, init_state, do_play_estimation_movie = False, s
     ax1.plot(*Xgt.T[:2], color="C0", linewidth=1.5)
     ax1.set_title("True trajectory and the nearby measurements")
     # ax1.set_aspect("equal")
-    #fig1.tight_layout()
+    fig1.tight_layout()
     fig1.savefig(prefix+"_trajectory.pdf")
 
     # %% play measurement movie. Remember that you can cross out the window
@@ -225,30 +260,35 @@ def evaluate_on_joyride(tracker, init_state, do_play_estimation_movie = False, s
 
     # consistency
     confprob = 0.9
+    write_csv_results(tr, confprob, prefix)
+    # CI2 = np.array(scipy.stats.chi2.interval(confprob, 2))
+    # CI4 = np.array(scipy.stats.chi2.interval(confprob, 4))
+    # CI2K = np.array(scipy.stats.chi2.interval(confprob, 2 * K)) / K
+    # CI4K = np.array(scipy.stats.chi2.interval(confprob, 4 * K)) / K
+
+    # inNEESposCI = np.mean((CI2[0] <= tr.NEESpos) * (tr.NEESpos <= CI2[1]))
+    # inNEESvelCI = np.mean((CI2[0] <= tr.NEESvel) * (tr.NEESvel <= CI2[1]))
+    # inNEESCI = np.mean((CI4[0] <= tr.NEES) * (tr.NEES <= CI4[1]))
+
+    # # write ANEESs to csv file
+    # with open(prefix + "_results.csv", 'w', newline='') as csvfile:
+    #     writer = csv.writer(csvfile, delimiter=',',
+    #                         quotechar='|', quoting=csv.QUOTE_MINIMAL)
+    #     #writer.writerow(["Result", "value"])
+    #     writer.writerow(["ANEES pos", round(tr.ANEESpos,3)])
+    #     writer.writerow(["ANEES vel", round(tr.ANEESvel,3)])
+    #     writer.writerow(["ANEES", round(tr.ANEES,3)])
+    #     writer.writerow(["RMSE pos", round(tr.posRMSE,2)])
+    #     writer.writerow(["RMSE vel", round(tr.velRMSE,2)])
+    #     writer.writerow(["Peak dev pos", round(tr.peak_pos_deviation,2)])
+    #     writer.writerow(["Peak dev vel", round(tr.peak_vel_deviation,2)])
+    #     writer.writerow(["In NEES pos CI", f"{inNEESposCI:.2%}"])
+    #     writer.writerow(["In NEES vel CI", f"{inNEESvelCI:.2%}"])
+    #     writer.writerow(["In NEES CI", f"{inNEESCI:.2%}"])
     CI2 = np.array(scipy.stats.chi2.interval(confprob, 2))
     CI4 = np.array(scipy.stats.chi2.interval(confprob, 4))
     CI2K = np.array(scipy.stats.chi2.interval(confprob, 2 * K)) / K
     CI4K = np.array(scipy.stats.chi2.interval(confprob, 4 * K)) / K
-
-    inNEESposCI = np.mean((CI2[0] <= tr.NEESpos) * (tr.NEESpos <= CI2[1]))
-    inNEESvelCI = np.mean((CI2[0] <= tr.NEESvel) * (tr.NEESvel <= CI2[1]))
-    inNEESCI = np.mean((CI4[0] <= tr.NEES) * (tr.NEES <= CI4[1]))
-
-    # write ANEESs to csv file
-    with open(prefix + "_results.csv", 'w', newline='') as csvfile:
-        writer = csv.writer(csvfile, delimiter=',',
-                            quotechar='|', quoting=csv.QUOTE_MINIMAL)
-        writer.writerow(["Type", "value"])
-        writer.writerow(["ANEESpos", round(tr.ANEESpos,3)])
-        writer.writerow(["ANEESvel", round(tr.ANEESvel,3)])
-        writer.writerow(["ANEES", round(tr.ANEES,3)])
-        writer.writerow(["RMSEpos", round(tr.posRMSE,2)])
-        writer.writerow(["RMSEvel", round(tr.velRMSE,2)])
-        writer.writerow(["peak_dev_pos", round(tr.peak_pos_deviation,2)])
-        writer.writerow(["peak_dev_vel", round(tr.peak_vel_deviation,2)])
-        writer.writerow(["in NEESpos CI", f"{inNEESposCI:.2%}"])
-        writer.writerow(["in NEESvel CI", f"{inNEESvelCI:.2%}"])
-        writer.writerow(["in NEES CI", f"{inNEESCI:.2%}"])
 
     time = np.cumsum(Ts)
 
@@ -257,13 +297,17 @@ def evaluate_on_joyride(tracker, init_state, do_play_estimation_movie = False, s
 
         # %% IMM-tracker plots
         # trajectory
-        fig3, axs3 = plt.subplots(1, 2, num=3, clear=True)
-        trajectory_plot(axs3[0], trackresult, Xgt)
-        mode_scatter(axs3[0], trackresult, -1)
+        fig3, axs = plt.subplots(1, 1, num=3, clear=True)
+        trajectory_plot(axs, trackresult, Xgt)
+        mode_scatter(axs, trackresult, -1)
+        fig3.tight_layout()
+        fig3.savefig(prefix+"_mode_scatter.pdf")
 
         # probabilities
-        mode_plot(axs3[1], trackresult, time, labels=modes)
-        fig3.savefig(prefix+"_modeplot.pdf")
+        fig6, axs = plt.subplots(1, 1, num=6, clear=True)
+        mode_plot(axs, trackresult, time, labels=modes)
+        fig6.tight_layout()
+        fig6.savefig(prefix+"_modeplot.pdf")
 
         # NEES
         fig4, axs4 = plt.subplots(3, sharex=True, num=4, clear=True)
@@ -283,6 +327,7 @@ def evaluate_on_joyride(tracker, init_state, do_play_estimation_movie = False, s
         axs5[0].set_ylabel("position error")
         axs5[1].plot(time, tr.vel_error)
         axs5[1].set_ylabel("velocity error")
+        fig5.tight_layout()
         fig5.savefig(prefix+"_error_plot.pdf")
 
         if do_play_estimation_movie:
@@ -293,13 +338,14 @@ def evaluate_on_joyride(tracker, init_state, do_play_estimation_movie = False, s
 
         # %% EKF-tracker plots
         fig, ax = plt.subplots(num=3, clear=True)
+        fig.tight_layout()
         trajectory_plot(ax, trackresult, Xgt)
 
         fig4, axs4 = plt.subplots(3, sharex=True, num=4, clear=True)
         confidence_interval_plot(axs4[0], time, tr.NEESpos, CI2, confprob, "NEES pos")
         confidence_interval_plot(axs4[1], time, tr.NEESvel, CI2, confprob, "NEES vel")
         confidence_interval_plot(axs4[2], time, tr.NEES, CI4, confprob, "NEES")
-        # fig4.tight_layout()
+        fig4.tight_layout()
         fig4.savefig(prefix+"_confidence_intervals.pdf")
 
         print(f"ANEESpos = {tr.ANEESpos:.2f} with CI = [{CI2K[0]:.2f}, {CI2K[1]:.2f}]")
@@ -311,6 +357,7 @@ def evaluate_on_joyride(tracker, init_state, do_play_estimation_movie = False, s
         axs5[0].set_ylabel("position error")
         axs5[1].plot(time, tr.vel_error)
         axs5[1].set_ylabel("velocity error")
+        fig5.tight_layout()
         fig5.savefig(prefix+"_error_plot.pdf")
     else:
         raise RuntimeError("Invalid tracker type")

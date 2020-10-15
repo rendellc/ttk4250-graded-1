@@ -96,6 +96,7 @@ for Zk, xgtk in zip(Z, Xgt):
 ax1.scatter(*Z_plot_data.T, s=5, color="C1")
 ax1.plot(*Xgt.T[:2], color="C0", linewidth=1.5)
 ax1.set_title("True trajectory and the nearby measurements")
+fig1.tight_layout()
 fig1.savefig("figs/sim_trajectory.pdf")
 plt.show(block=False)
 
@@ -183,12 +184,15 @@ CI4 = np.array(scipy.stats.chi2.interval(confprob, 4))
 CI2K = np.array(scipy.stats.chi2.interval(confprob, 2 * K)) / K
 CI4K = np.array(scipy.stats.chi2.interval(confprob, 4 * K)) / K
 
+utils.write_csv_results(trackresult, confprob, "figs/sim")
+
 # %% plots
 # trajectory
 fig3, axs3 = plt.subplots(1, 2, num=3, clear=True)
 utils.trajectory_plot(axs3[0], trackresult, Xgt)
 utils.mode_scatter(axs3[0], trackresult, 1)
 utils.mode_plot(axs3[1], trackresult, time, labels=modes)
+fig3.tight_layout()
 fig3.savefig("figs/sim_modeplot.pdf")
 
 # NEES
@@ -213,6 +217,7 @@ axs5[0].plot(np.arange(K) * Ts, trackresult.pos_error)
 axs5[0].set_ylabel("position error")
 axs5[1].plot(np.arange(K) * Ts, trackresult.vel_error)
 axs5[1].set_ylabel("velocity error")
+fig5.tight_layout()
 fig5.savefig("figs/sim_errorplot.pdf")
 
 plt.show()

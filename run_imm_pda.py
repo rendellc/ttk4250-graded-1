@@ -230,12 +230,14 @@ fig5.savefig("figs/sim_errorplot.pdf")
 
 parameters = {
         r"$\sigma_z$": rf"${sigma_z}$",
-        r"$\lambda$": rf"${clutter_intensity}$",
+        r"$\lambda$": rf"${clutter_intensity:.5f}$",
         r"$P_D$": rf"${PD}$",
         r"$g$": rf"${gate_size}$",
         r"$\sigma_{a,CV}$": rf"${sigma_a_CV}$",
         r"$\sigma_{a,CT}$": rf"${sigma_a_CT}$",
-        r"$\sigma_\omega$": rf"{sigma_omega/np.pi:.4f}pi",
+        r"$\sigma_\omega$": rf"${sigma_omega/np.pi:.4f}\pi$",
+        r"$\pi^{00}$": rf"${PI11}$",
+        r"$\pi^{11}$": rf"${PI22}$",
 }
 utils.write_csv_parameters(parameters, prefix="figs/sim")
 

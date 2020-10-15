@@ -69,7 +69,7 @@ utils.evaluate_on_joyride(tracker, init_state, modes = ["CV"], prefix="cv")
 # write parameters to file for latex
 parameters = {
         r"$\sigma_z$": rf"${sigma_z}$",
-        r"$\lambda$": rf"${clutter_intensity}$",
+        r"$\lambda$": rf"${clutter_intensity:.5f}$",
         r"$P_D$": rf"${PD}$",
         r"$g$": rf"${gate_size}$",
         r"$\sigma_{a,CV}$": rf"${sigma_a_CV}$",
@@ -99,7 +99,7 @@ utils.evaluate_on_joyride(tracker, init_state, modes=["CT"], prefix="ct")
 # write parameters to file for latex
 parameters = {
         r"$\sigma_z$": rf"${sigma_z}$",
-        r"$\lambda$": rf"${clutter_intensity}$",
+        r"$\lambda$": rf"${clutter_intensity:.5f}$",
         r"$P_D$": rf"${PD}$",
         r"$g$": rf"${gate_size}$",
         r"$\sigma_{a,CT}$": rf"${sigma_a_CT}$",
@@ -122,8 +122,8 @@ sigma_a_CT = 0.2
 sigma_omega = 0.005*np.pi
 
 # markov chain
-PI11 = 0.98
-PI22 = 0.98
+PI11 = 0.95
+PI22 = 0.95
 
 p10 = 0.5  # initvalue for mode probabilities
 
@@ -154,7 +154,7 @@ utils.evaluate_on_joyride(tracker, init_imm_state, False, 60, 60+10, modes=["CV"
 # write parameters to file for latex
 parameters = {
         r"$\sigma_z$": rf"${sigma_z}$",
-        r"$\lambda$": rf"${clutter_intensity}$",
+        r"$\lambda$": rf"${clutter_intensity:.5f}$",
         r"$P_D$": rf"${PD}$",
         r"$g$": rf"${gate_size}$",
         r"$\sigma_{a,CV}$": rf"${sigma_a_CV}$",
@@ -180,9 +180,10 @@ dt = 2.5
 sigma_omega = (1/(2*3*dt**2))*np.pi
 
 # markov chain
-PI11 = 0.98
-PI22 = 0.98
-PI33 = 0.98
+p = 0.98
+PI11 = p
+PI22 = p
+PI33 = p
 
 PI = np.array([[PI11, (1 - PI11)/2, (1-PI11)/2], [(1 - PI22)/2, PI22, (1-PI22)/2], [(1-PI33)/2, (1-PI33)/2, PI33]])
 #PI = np.array([
@@ -219,13 +220,14 @@ tracker = pda.PDA(imm_filter, clutter_intensity, PD, gate_size)
 utils.evaluate_on_joyride(tracker, init_imm_state, False, 60, 60+1, modes=["CV", "CVhigh", "CT"], prefix="cvcvct")
 parameters = {
         r"$\sigma_z$": rf"${sigma_z}$",
-        r"$\lambda$": rf"${clutter_intensity}$",
+        r"$\lambda$": rf"${clutter_intensity:.5f}$",
         r"$P_D$": rf"${PD}$",
         r"$g$": rf"${gate_size}$",
         r"$\sigma_{a,CV}$": rf"${sigma_a_CV_low}$",
         r"$\sigma_{a,CVhigh}$": rf"${sigma_a_CV_high}$",
         r"$\sigma_{a,CT}$": rf"${sigma_a_CT}$",
         r"$\sigma_\omega$": rf"${sigma_omega/np.pi:.4f}\pi$",
+        r"$\pi^{11},\pi^{22}\pi^{33}$": rf"${p}$",
 }
 utils.write_csv_parameters(parameters, prefix="figs/cvcvct")
 

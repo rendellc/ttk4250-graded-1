@@ -142,19 +142,20 @@ def mode_plot(ax, trackresult, time, labels):
     ax.set_ylim([0, 1])
     ax.set_ylabel("mode probability")
     ax.set_xlabel("time")
-    ax.legend(loc="upper right")
+    ax.legend(loc="lower left")
 
-def mode_scatter(ax, trackresult, mode_index, threshold):
-    mode_indexes = [k for k in range(len(trackresult.prob_hat)) if trackresult.prob_hat[k][mode_index] > threshold]
+def mode_scatter(ax, trackresult, mode_index):
+    mode_indexes = [k for k in range(len(trackresult.prob_hat)) if trackresult.prob_hat[k][mode_index] == max(trackresult.prob_hat[k])]
     ax.scatter(trackresult.x_hat[mode_indexes, 0], trackresult.x_hat[mode_indexes, 1], c='r')
 
-def confidence_interval_plot(ax, time, NEES, CI, confprob, ylabel):
+def confidence_interval_plot(ax, time, NEES, CI, confprob, ylabel, writetitle = False):
     inCI = np.mean((CI[0] <= NEES) * (NEES <= CI[1]))
 
     ax.plot(time, NEES)
     ax.plot([time[0], time[~0]], np.repeat(CI[None], 2, 0), "--r")
     ax.set_ylabel(ylabel)
-    ax.set_title(f"{inCI*100:.1f}% inside {confprob*100:.1f}% CI")
+    if writetitle:
+        ax.set_title(f"{inCI*100:.1f}% inside {confprob*100:.1f}% CI")
 
 
 def load_pda_data(filename):
@@ -229,6 +230,10 @@ def evaluate_on_joyride(tracker, init_state, do_play_estimation_movie = False, s
     CI2K = np.array(scipy.stats.chi2.interval(confprob, 2 * K)) / K
     CI4K = np.array(scipy.stats.chi2.interval(confprob, 4 * K)) / K
 
+    inNEESposCI = np.mean((CI2[0] <= tr.NEESpos) * (tr.NEESpos <= CI2[1]))
+    inNEESvelCI = np.mean((CI2[0] <= tr.NEESvel) * (tr.NEESvel <= CI2[1]))
+    inNEESCI = np.mean((CI4[0] <= tr.NEES) * (tr.NEES <= CI4[1]))
+
     # write ANEESs to csv file
     with open(prefix + "_results.csv", 'w', newline='') as csvfile:
         writer = csv.writer(csvfile, delimiter=',',
@@ -241,6 +246,9 @@ def evaluate_on_joyride(tracker, init_state, do_play_estimation_movie = False, s
         writer.writerow(["RMSEvel", round(tr.velRMSE,2)])
         writer.writerow(["peak_dev_pos", round(tr.peak_pos_deviation,2)])
         writer.writerow(["peak_dev_vel", round(tr.peak_vel_deviation,2)])
+        writer.writerow(["in NEESpos CI", f"{inNEESposCI:.2%}"])
+        writer.writerow(["in NEESvel CI", f"{inNEESvelCI:.2%}"])
+        writer.writerow(["in NEES CI", f"{inNEESCI:.2%}"])
 
     time = np.cumsum(Ts)
 
@@ -251,7 +259,7 @@ def evaluate_on_joyride(tracker, init_state, do_play_estimation_movie = False, s
         # trajectory
         fig3, axs3 = plt.subplots(1, 2, num=3, clear=True)
         trajectory_plot(axs3[0], trackresult, Xgt)
-        mode_scatter(axs3[0], trackresult, -1, 0.5)
+        mode_scatter(axs3[0], trackresult, -1)
 
         # probabilities
         mode_plot(axs3[1], trackresult, time, labels=modes)

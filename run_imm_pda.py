@@ -187,7 +187,7 @@ CI4K = np.array(scipy.stats.chi2.interval(confprob, 4 * K)) / K
 # trajectory
 fig3, axs3 = plt.subplots(1, 2, num=3, clear=True)
 utils.trajectory_plot(axs3[0], trackresult, Xgt)
-utils.mode_scatter(axs3[0], trackresult, 1, 0.5)
+utils.mode_scatter(axs3[0], trackresult, 1)
 utils.mode_plot(axs3[1], trackresult, time, labels=modes)
 fig3.savefig("figs/sim_modeplot.pdf")
 

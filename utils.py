@@ -199,12 +199,8 @@ def write_csv_results(tr: TrackResult, confprob, prefix):
     # write ANEESs to csv file
     with open(prefix + "_results.csv", 'w', newline='') as csvfile:
         print("Writing", csvfile.name)
-        writer = csv.writer(csvfile, delimiter=',',
+        writer = csv.writer(csvfile, delimiter=';',
                             quotechar='|', quoting=csv.QUOTE_MINIMAL)
-        #writer.writerow(["Result", "value"])
-        # writer.writerow(["ANEES pos", round(tr.ANEESpos,3)])
-        # writer.writerow(["ANEES vel", round(tr.ANEESvel,3)])
-        # writer.writerow(["ANEES", round(tr.ANEES,3)])
         writer.writerow(["RMSE pos", round(tr.posRMSE,2)])
         writer.writerow(["RMSE vel", round(tr.velRMSE,2)])
         writer.writerow(["Peak dev pos", round(tr.peak_pos_deviation,2)])
@@ -219,7 +215,7 @@ def write_csv_results(tr: TrackResult, confprob, prefix):
     inNEESCI = np.mean((CI4[0] <= tr.NEES) * (tr.NEES <= CI4[1]))
     with open(prefix + "_consistency.csv", 'w', newline='') as csvfile:
         print("Writing", csvfile.name)
-        writer = csv.writer(csvfile, delimiter='|', quoting=csv.QUOTE_NONE)
+        writer = csv.writer(csvfile, delimiter=';', quoting=csv.QUOTE_NONE)
         #writer = csv.writer(csvfile, delimiter=',',
         #                    quotechar='|', quoting=csv.QUOTE_MINIMAL)
 
@@ -232,7 +228,7 @@ def write_csv_results(tr: TrackResult, confprob, prefix):
 
     with open(prefix + "_nees.csv", 'w', newline='') as csvfile:
         print("Writing", csvfile.name)
-        writer = csv.writer(csvfile, delimiter=',',
+        writer = csv.writer(csvfile, delimiter=';',
                             quotechar='|', quoting=csv.QUOTE_MINIMAL)
 
         writer.writerow([f"NEES pos within {(100*confprob):.0f}\\%-CI", f"{(100*inNEESposCI):.1f}\\%"])
@@ -244,13 +240,13 @@ def write_csv_parameters(parameters, prefix):
     print(parameters)
     with open(prefix + "_parameters.csv", 'w', newline='') as csvfile:
         print("Writing", csvfile.name)
-        writer = csv.writer(csvfile, delimiter='|',quoting=csv.QUOTE_MINIMAL)
+        writer = csv.writer(csvfile, delimiter=';',quoting=csv.QUOTE_MINIMAL)
                             #quotechar='|', quoting=csv.QUOTE_MINIMAL)
 
         # write so that latex will interpret it correctly
-        writer.writerow(["name", "value"])
+        writer.writerow(["", "name", "value"])
         for k,v in parameters.items():
-            writer.writerow([k, v])
+            writer.writerow(["", k, v])
 
 def evaluate_on_joyride(tracker, init_state, do_play_estimation_movie = False, start_k = 0, end_k = 10, modes = [], prefix = "", figdir = "figs/"):
     Z, Xgt, K, Ts = load_pda_data("data_joyride.mat")

@@ -68,11 +68,11 @@ init_state = tracker.init_filter_state({"mean": mean_init, "cov": cov_init})
 utils.evaluate_on_joyride(tracker, init_state, modes = ["CV"], prefix="cv")
 # write parameters to file for latex
 parameters = {
-        r"$\sigma_z$": rf"${sigma_z}$",
-        r"$\lambda$": rf"${clutter_intensity:.5f}$",
-        r"$P_D$": rf"${PD}$",
-        r"$g$": rf"${gate_size}$",
-        r"$\sigma_{a,CV}$": rf"${sigma_a_CV}$",
+        r"\sigma_z": rf"{sigma_z}",
+        r"\lambda": rf"{clutter_intensity:.5f}",
+        r"P_D": rf"{PD}",
+        r"g": rf"{gate_size}",
+        r"\sigma_{a,CV}": rf"{sigma_a_CV}",
 }
 utils.write_csv_parameters(parameters, prefix="figs/cv")
 
@@ -98,12 +98,12 @@ init_state = tracker.init_filter_state({"mean": mean_init, "cov": cov_init})
 utils.evaluate_on_joyride(tracker, init_state, modes=["CT"], prefix="ct")
 # write parameters to file for latex
 parameters = {
-        r"$\sigma_z$": rf"${sigma_z}$",
-        r"$\lambda$": rf"${clutter_intensity:.5f}$",
-        r"$P_D$": rf"${PD}$",
-        r"$g$": rf"${gate_size}$",
-        r"$\sigma_{a,CT}$": rf"${sigma_a_CT}$",
-        r"$\sigma_\omega$": rf"${sigma_omega/np.pi:.4f}\pi$",
+        r"\sigma_z": rf"{sigma_z}",
+        r"\lambda": rf"{clutter_intensity:.5f}",
+        r"P_D": rf"{PD}",
+        r"g": rf"{gate_size}",
+        r"\sigma_{a,CT}": rf"{sigma_a_CT}",
+        r"\sigma_\omega": rf"{sigma_omega/np.pi:.4f}\pi",
 }
 utils.write_csv_parameters(parameters, prefix="figs/ct")
 
@@ -153,13 +153,13 @@ utils.evaluate_on_joyride(tracker, init_imm_state, False, 60, 60+10, modes=["CV"
 
 # write parameters to file for latex
 parameters = {
-        r"$\sigma_z$": rf"${sigma_z}$",
-        r"$\lambda$": rf"${clutter_intensity:.5f}$",
-        r"$P_D$": rf"${PD}$",
-        r"$g$": rf"${gate_size}$",
-        r"$\sigma_{a,CV}$": rf"${sigma_a_CV}$",
-        r"$\sigma_{a,CT}$": rf"${sigma_a_CT}$",
-        r"$\sigma_\omega$": rf"${sigma_omega/np.pi:.4f}\pi$",
+        r"\sigma_z": rf"{sigma_z}",
+        r"\lambda": rf"{clutter_intensity:.5f}",
+        r"P_D": rf"{PD}",
+        r"g": rf"{gate_size}",
+        r"\sigma_{a,CV}": rf"{sigma_a_CV}",
+        r"\sigma_{a,CT}": rf"{sigma_a_CT}",
+        r"\sigma_\omega": rf"{sigma_omega/np.pi:.4f}\pi",
 }
 utils.write_csv_parameters(parameters, prefix="figs/cvct")
 
@@ -219,15 +219,15 @@ tracker = pda.PDA(imm_filter, clutter_intensity, PD, gate_size)
 
 utils.evaluate_on_joyride(tracker, init_imm_state, False, 60, 60+1, modes=["CV", "CVhigh", "CT"], prefix="cvcvct")
 parameters = {
-        r"$\sigma_z$": rf"${sigma_z}$",
-        r"$\lambda$": rf"${clutter_intensity:.5f}$",
-        r"$P_D$": rf"${PD}$",
-        r"$g$": rf"${gate_size}$",
-        r"$\sigma_{a,CV}$": rf"${sigma_a_CV_low}$",
-        r"$\sigma_{a,CVhigh}$": rf"${sigma_a_CV_high}$",
-        r"$\sigma_{a,CT}$": rf"${sigma_a_CT}$",
-        r"$\sigma_\omega$": rf"${sigma_omega/np.pi:.4f}\pi$",
-        r"$\pi^{11},\pi^{22},\pi^{33}$": rf"${p}$",
+        r"\sigma_z": rf"{sigma_z}",
+        r"\lambda": rf"{clutter_intensity:.5f}",
+        r"P_D": rf"{PD}",
+        r"g": rf"{gate_size}",
+        r"\sigma_{a,CV}": rf"{sigma_a_CV_low}",
+        r"\sigma_{a,CVhigh}": rf"{sigma_a_CV_high}",
+        r"\sigma_{a,CT}": rf"{sigma_a_CT}",
+        r"\sigma_\omega": rf"{sigma_omega/np.pi:.4f}\pi",
+        r"\pi^{11},\pi^{22},\pi^{33}": rf"{p}",
 }
 utils.write_csv_parameters(parameters, prefix="figs/cvcvct")
 

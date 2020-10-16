@@ -227,7 +227,7 @@ parameters = {
         r"$\sigma_{a,CVhigh}$": rf"${sigma_a_CV_high}$",
         r"$\sigma_{a,CT}$": rf"${sigma_a_CT}$",
         r"$\sigma_\omega$": rf"${sigma_omega/np.pi:.4f}\pi$",
-        r"$\pi^{11},\pi^{22}\pi^{33}$": rf"${p}$",
+        r"$\pi^{11},\pi^{22},\pi^{33}$": rf"${p}$",
 }
 utils.write_csv_parameters(parameters, prefix="figs/cvcvct")
 

@@ -48,7 +48,8 @@ class TrackResult:
 
 
 def compute_rmse_and_peak_deviation(v1, v2):
-    err = np.linalg.norm(v1 - v2, axis=0)
+    err = np.linalg.norm(v1 - v2, axis=1)
+    print(err.shape)
     rmse = np.sqrt(np.mean(err**2))
     peak_deviation = err.max()
     return rmse, peak_deviation
@@ -218,21 +219,25 @@ def write_csv_results(tr: TrackResult, confprob, prefix):
     inNEESCI = np.mean((CI4[0] <= tr.NEES) * (tr.NEES <= CI4[1]))
     with open(prefix + "_consistency.csv", 'w', newline='') as csvfile:
         print("Writing", csvfile.name)
-        writer = csv.writer(csvfile, delimiter=',',
-                            quotechar='|', quoting=csv.QUOTE_MINIMAL)
+        writer = csv.writer(csvfile, delimiter='|', quoting=csv.QUOTE_NONE)
+        #writer = csv.writer(csvfile, delimiter=',',
+        #                    quotechar='|', quoting=csv.QUOTE_MINIMAL)
 
-        writer.writerow(["ANEES pos", round(tr.ANEESpos,3), f"{CI2K[0]:.2f}", f"{CI2K[1]:.2f}"])
-        writer.writerow(["ANEES vel", round(tr.ANEESvel,3), f"{CI2K[0]:.2f}", f"{CI2K[1]:.2f}"])
-        writer.writerow(["ANEES", round(tr.ANEES,3), f"{CI4K[0]:.2f}", f"{CI4K[1]:.2f}"] )
+        writer.writerow(["ANEES pos", round(tr.ANEESpos,3), rf"$({CI2K[0]:.2f},{CI2K[1]:.2f})$"])
+        writer.writerow(["ANEES vel", round(tr.ANEESvel,3), rf"$({CI2K[0]:.2f},{CI2K[1]:.2f})$"])
+        writer.writerow(["ANEES", round(tr.ANEES,3), rf"$({CI4K[0]:.2f},{CI4K[1]:.2f})$"] )
+        writer.writerow([f"NEES pos within {(100*confprob):.0f}\\%-CI", f"{(100*inNEESposCI):.1f}\\%",""])
+        writer.writerow([f"NEES vel within {(100*confprob):.0f}\\%-CI", f"{(100*inNEESvelCI):.1f}\\%",""])
+        writer.writerow([f"NEES within {(100*confprob):.0f}\\%-CI", f"{(100*inNEESCI):.1f}\\%",""])
 
     with open(prefix + "_nees.csv", 'w', newline='') as csvfile:
         print("Writing", csvfile.name)
         writer = csv.writer(csvfile, delimiter=',',
                             quotechar='|', quoting=csv.QUOTE_MINIMAL)
 
-        writer.writerow(["In NEES pos CI", f"{(100*inNEESposCI):.1f}\\%"])
-        writer.writerow(["In NEES vel CI", f"{(100*inNEESvelCI):.1f}\\%"])
-        writer.writerow(["In NEES CI", f"{(100*inNEESCI):.1f}\\%"])
+        writer.writerow([f"NEES pos within {(100*confprob):.0f}\\%-CI", f"{(100*inNEESposCI):.1f}\\%"])
+        writer.writerow([f"NEES vel within {(100*confprob):.0f}\\%-CI", f"{(100*inNEESvelCI):.1f}\\%"])
+        writer.writerow([f"NEES within {(100*confprob):.0f}\\%-CI", f"{(100*inNEESCI):.1f}\\%"])
 
 
 def write_csv_parameters(parameters, prefix):
